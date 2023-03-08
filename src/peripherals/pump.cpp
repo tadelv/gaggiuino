@@ -8,15 +8,13 @@ float flowPerClickAtZeroBar = 0.29f;
 short maxPumpClicksPerSecond = 50;
 
 std::array<float, 7> pressureInefficiencyCoefficient {{
-  0.128f,
-  0.00222f,
-  -0.00184f,
-  0.0000915f,
-  0.00000594f,
-  -0.000000798f,
-  0.0000000186f
+  0.055f,
+  0.0105f,
+  0.00401f,
+  0.00067f,
+  0.000028f
 }};
-
+// float fpc = (flowPerClickAtZeroBar - pressureInefficiencyCoefficient[0]) - (pressureInefficiencyCoefficient[1] + (pressureInefficiencyCoefficient[2] - (pressureInefficiencyCoefficient[3] - pressureInefficiencyCoefficient[4] * pressure) * pressure) * pressure) * pressure;
 // Initialising some pump specific specs, mainly:
 // - max pump clicks(dependant on region power grid spec)
 // - pump clicks at 0 pressure in the system
@@ -90,15 +88,7 @@ int getCPS(void) {
 // float fpc = (flowPerClickAtZeroBar - pressureInefficiencyConstant0) + (pressureInefficiencyConstant1 + (pressureInefficiencyConstant2 + (pressureInefficiencyConstant3 + (pressureInefficiencyConstant4 + (pressureInefficiencyConstant5 + pressureInefficiencyConstant6 * pressure) * pressure) * pressure) * pressure) * pressure) * pressure;
 // Polinomyal func that should in theory calc fpc faster than the above.
 float getPumpFlowPerClick(float pressure) {
-  // float fpc = (flowPerClickAtZeroBar - pressureInefficiencyCoefficient[0]) + (pressureInefficiencyCoefficient[1] + (pressureInefficiencyCoefficient[2] + (pressureInefficiencyCoefficient[3] + (pressureInefficiencyCoefficient[4] + (pressureInefficiencyCoefficient[5] + pressureInefficiencyCoefficient[6] * pressure) * pressure) * pressure) * pressure) * pressure) * pressure;
-  float fpc = 0.f;
-  for (int i = 6; i >= 0; i--) {
-    fpc = fpc * pressure + pressureInefficiencyCoefficient[i];
-  }
-  // for (int i = 6; i > 0; i--) {
-  //     fpc = (fpc + pressureInefficiencyCoefficient[i]) * pressure;
-  // }
-  // fpc += flowPerClickAtZeroBar - pressureInefficiencyCoefficient[0];
+  float fpc = (flowPerClickAtZeroBar - pressureInefficiencyCoefficient[0]) - (pressureInefficiencyCoefficient[1] + (pressureInefficiencyCoefficient[2] - (pressureInefficiencyCoefficient[3] - pressureInefficiencyCoefficient[4] * pressure) * pressure) * pressure) * pressure;
 
   return 50.f * fmaxf(fpc, 0.f) / (float)maxPumpClicksPerSecond;
 }
