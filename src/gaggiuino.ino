@@ -798,14 +798,14 @@ void calibratePump(void) {
   delay(1000);
   closeValve();
   setPumpToRawValue(50);
-  delay(1000);
+  delay(1500);
   setPumpToRawValue(0);
   sensorsReadPressure();
   float firstPressure = currentState.pressure;
 
   lcdSetPressure(firstPressure);
 
-  delay(5000);
+  delay(2000);
 
   pumpPhaseShift();
 
@@ -813,18 +813,18 @@ void calibratePump(void) {
   delay(1000);
   closeValve();
   setPumpToRawValue(50);
-  delay(1000);
+  delay(1500);
   setPumpToRawValue(0);
   sensorsReadPressure();
   float secondPressure = currentState.pressure;
 
   lcdSetPressure(secondPressure);
 
-  if (secondPressure < firstPressure) {
+  if (secondPressure > firstPressure) {
     pumpPhaseShift();
   }
 
-  delay(5000);
+  delay(2000);
 
   openValve();
   delay(1000);
