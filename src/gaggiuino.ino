@@ -100,6 +100,7 @@ void setup(void) {
 
 //Main loop where all the logic is continuously run
 void loop(void) {
+  fillBoiler();
   pageValuesRefresh(false);
   lcdListen();
   sensorsRead();
@@ -108,7 +109,6 @@ void loop(void) {
   lcdRefresh();
   espCommsSendSensorData(currentState);
   systemHealthCheck(0.7f);
-  fillBoiler();
 }
 
 //##############################################################################################################################
@@ -212,7 +212,7 @@ static void calculateWeightAndFlow(void) {
     }
   } else {
     currentState.consideredFlow = 0.f;
-
+    long pumpClicks = getAndResetClickCounter();
     flowTimer = millis();
   }
 }
