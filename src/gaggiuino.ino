@@ -793,6 +793,8 @@ void cpsInit(eepromValues_t &eepromValues) {
 }
 
 void calibratePump(void) {
+  bool selectedPhase = false;
+  lcdShowPopup("Phase selection..");
   openValve();
   delay(1000);
   closeValve();
@@ -807,6 +809,7 @@ void calibratePump(void) {
   delay(2000);
 
   pumpPhaseShift();
+  selectedPhase = !selectedPhase;
 
   openValve();
   delay(1000);
@@ -821,8 +824,9 @@ void calibratePump(void) {
 
   if (secondPressure > firstPressure) {
     pumpPhaseShift();
+    selectedPhase = !selectedPhase;
   }
-
+  lcdShowPopup(selectedPhase ? "Phase 1 selected" : "Phase 2 selected");
   delay(2000);
 
   openValve();
