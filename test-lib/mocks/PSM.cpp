@@ -24,5 +24,4 @@ void PSM::setDivider(unsigned char divider) {
 }
 
 void PSM::shiftDividerCounter(char value) {
-  
 }
