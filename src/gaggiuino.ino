@@ -108,6 +108,7 @@ void loop(void) {
   lcdRefresh();
   espCommsSendSensorData(currentState);
   systemHealthCheck(0.7f);
+  fillBoiler();
 }
 
 //##############################################################################################################################
@@ -122,7 +123,6 @@ static void sensorsRead(void) {
   sensorsReadWeight();
   sensorsReadPressure();
   calculateWeightAndFlow();
-  fillBoiler();
   updateStartupTimer();
 }
 
@@ -772,7 +772,7 @@ void fillBoilerUntilThreshod(unsigned long elapsedTime) {
 
   lcdShowPopup("Filling boiler!");
   openValve();
-  setPumpToRawValue(80);
+  setPumpToRawValue(35);
 }
 
 void updateStartupTimer() {
@@ -828,8 +828,4 @@ void calibratePump(void) {
   }
   lcdShowPopup(selectedPhase ? "Phase 1 selected" : "Phase 2 selected");
   delay(2000);
-
-  openValve();
-  delay(1000);
-  closeValve();
 }
