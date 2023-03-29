@@ -212,7 +212,7 @@ static void calculateWeightAndFlow(void) {
     }
   } else {
     currentState.consideredFlow = 0.f;
-    long pumpClicks = getAndResetClickCounter();
+    currentState.pumpClicks = getAndResetClickCounter();
     flowTimer = millis();
   }
 }
