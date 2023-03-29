@@ -12,4 +12,7 @@ public:
 
   unsigned int cps();
   unsigned long getLastMillis();
+  unsigned char getDivider(void);
+  void setDivider(unsigned char divider);
+  void shiftDividerCounter(char value);
 };
