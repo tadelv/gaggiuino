@@ -799,7 +799,7 @@ void calibratePump(void) {
   delay(1000);
   closeValve();
   setPumpToRawValue(50);
-  delay(1500);
+  delay(1100);
   setPumpToRawValue(0);
   sensorsReadPressure();
   float firstPressure = currentState.pressure;
@@ -815,7 +815,7 @@ void calibratePump(void) {
   delay(1000);
   closeValve();
   setPumpToRawValue(50);
-  delay(1500);
+  delay(1100);
   setPumpToRawValue(0);
   sensorsReadPressure();
   float secondPressure = currentState.pressure;
