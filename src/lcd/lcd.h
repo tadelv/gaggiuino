@@ -1,3 +1,4 @@
+/* 09:32 15/03/2023 - change triggering comment */
 #ifndef LCD_H
 #define LCD_H
 
@@ -24,6 +25,7 @@ enum class SCREEN_MODES {
 void lcdInit(void);
 void lcdUploadCfg(eepromValues_t &eepromCurrentValues);
 void lcdListen(void);
+void lcdWakeUp(void);
 
 eepromValues_t lcdDownloadCfg(void);
 int lcdGetHomeScreenScalesEnabled(void);
@@ -33,7 +35,7 @@ int lcdGetDescaleCycle(void);
 
 void lcdSetDescaleCycle(int cycle);
 void lcdSetPressure(float val);
-void lcdSetTemperature(int val);
+void lcdSetTemperature(uint16_t val);
 void lcdTargetState(int val);
 void lcdSetWeight(float val);
 void lcdSetFlow(int val);
@@ -48,9 +50,10 @@ void lcdSetBrewTimer(int seconds);
 void lcdWarmupStateStop(void);
 
 /* Triggers */
-void lcdTrigger1(void);
-void lcdTrigger2(void);
-void lcdTrigger3(void);
-void lcdTrigger4(void);
+void lcdSaveSettingsTrigger(void);
+void lcdScalesTareTrigger(void);
+void lcdHomeScreenScalesTrigger(void);
+void lcdBrewGraphScalesTareTrigger(void);
+void lcdPumpPhaseShitfTrigger(void);
 
 #endif

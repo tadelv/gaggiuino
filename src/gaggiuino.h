@@ -1,8 +1,10 @@
+/* 09:32 15/03/2023 - change triggering comment */
 #ifndef GAGGIUINO_H
 #define GAGGIUINO_H
 
 #include <Arduino.h>
 #include <SimpleKalmanFilter.h>
+#include <ncp5623.h>
 
 #include "log.h"
 #include "eeprom_data/eeprom_data.h"
@@ -14,11 +16,13 @@
 #include "peripherals/peripherals.h"
 #include "peripherals/thermocouple.h"
 #include "sensors_state.h"
+#include "system_state.h"
 #include "functional/descale.h"
 #include "functional/just_do_coffee.h"
 #include "functional/predictive_weight.h"
 #include "profiling_phases.h"
 #include "peripherals/esp_comms.h"
+#include "peripherals/tofnled.h"
 
 // Define some const values
 #if defined SINGLE_BOARD
@@ -54,6 +58,13 @@ enum class OPERATION_MODES {
   OPMODE_pressureBasedPreinfusionAndFlowProfile
 } ;
 
+//Some consts
+#ifndef LEGO_VALVE_RELAY
+const float calibrationPressure = 4.5f;
+#else
+const float calibrationPressure = 0.65f;
+#endif
+
 //Timers
 unsigned long systemHealthTimer;
 unsigned long pageRefreshTimer;
@@ -80,7 +91,6 @@ bool homeScreenScalesEnabled = false;
 // Other util vars
 float previousSmoothedPressure;
 float previousSmoothedPumpFlow;
-bool startupInitFinished;
 
 static void systemHealthCheck(float pressureThreshold);
 

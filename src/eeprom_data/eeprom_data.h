@@ -1,8 +1,9 @@
+/* 09:32 15/03/2023 - change triggering comment */
 #ifndef EEPROM_DATA_H
 #define EEPROM_DATA_H
 
 #include <Arduino.h>
-#include "log.h"
+#include "../log.h"
 
 /**
 * current data version definition below
@@ -24,13 +25,10 @@
 */
 
 /**
-* Version 6:
-* - Pressure as float:
-*   - pressureProfilingStart
-*   - pressureProfilingFinish
-*   - preinfusionBar
-*   - preinfusionFlowPressureTarget
-*   - flowProfilePressureTarget
+* Version 7:
+* - Add two more restrictions:
+*   - switchPhaseOnPressureBelow
+*   - switchPhaseOnFirstDrops
 */
 struct eepromValues_t {
   uint16_t setpoint;
@@ -66,6 +64,9 @@ struct eepromValues_t {
   bool     graphBrew;
   bool     brewDeltaState;
   bool     switchPhaseOnThreshold;
+  float    switchPhaseOnPressureBelow;
+  float    switchOnWeightAbove;
+  float    switchOnWaterPumped;
   bool     basketPrefill;
   int      scalesF1;
   int      scalesF2;
