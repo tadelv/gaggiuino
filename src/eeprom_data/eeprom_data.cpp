@@ -4,6 +4,7 @@
 #include "eeprom_data.h"
 #include "eeprom_metadata.h"
 #include "default_profiles.h"
+#include "../peripherals/pump.h"
 #include "legacy/eeprom_data_v4.h"
 #include "legacy/eeprom_data_v5.h"
 #include "legacy/eeprom_data_v6.h"
@@ -186,7 +187,7 @@ bool eepromWrite(eepromValues_t eepromValuesNew) {
   eepromMetadata.versionTimestampXOR = eepromMetadata.timestamp ^ eepromMetadata.version;
 
   dmaWriteCurrentMetadata();
-
+  eepromValuesNew.powerLineFrequency == 60u ? pumpSetPhaseAngle(6500u) : pumpSetPhaseAngle(7500u);
   return true;
 }
 
