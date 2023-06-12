@@ -31,6 +31,10 @@ void pumpInit(const int powerLineFrequency, const float pumpFlowAtZero) {
   fpc_multiplier = 60.f / (float)maxPumpClicksPerSecond;
 }
 
+void pumpSetPhaseAngle(uint16_t val) {
+  pump.setPhaseAngle(val);
+}
+
 // Function that returns the percentage of clicks the pump makes in it's current phase
 inline float getPumpPct(const float targetPressure, const float flowRestriction, const SensorState &currentState) {
   if (targetPressure == 0.f) {
