@@ -17,6 +17,7 @@ export default function AvailableNetworks({ onConnected }) {
       try {
         setLoading(true);
         setNetworksError(false);
+        // eslint-disable-next-line no-console
         console.log('loading networks');
         const networksResponse = await getAvailableNetworks();
         setNetworks(networksResponse);

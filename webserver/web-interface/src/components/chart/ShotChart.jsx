@@ -126,10 +126,6 @@ function newShotStarted(dataPoint, chartData) {
 }
 
 function addDataPointToChartData(chartData, dataPoint, maxLength, chartRef) {
-  while (!Number.isNaN(maxLength) && chartData.labels.length >= maxLength) {
-    popDataFromChartData(chartData);
-  }
-
   if (!dataPoint) {
     return;
   }
@@ -144,6 +140,10 @@ function addDataPointToChartData(chartData, dataPoint, maxLength, chartRef) {
   chartData.datasets[6].data.push(dataPoint.targetPumpFlow);
 
   /* eslint-disable no-param-reassign */
+  if (maxLength && chartData.labels.length > maxLength) {
+    popDataFromChartData(chartData);
+  }
+
   chartRef.current.data.labels = chartData.labels;
   chartData.datasets.forEach((dataset, index) => {
     chartRef.current.data.datasets[index].data = dataset.data;
