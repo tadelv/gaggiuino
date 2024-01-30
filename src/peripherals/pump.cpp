@@ -113,7 +113,7 @@ float getPumpFlowPerClick(const float pressure) {
   const int degree = 6; //pressureInefficiencyCoefficient.size() - 1;
 
   for (int i = 0; i <= degree; ++i) {
-    fpc += pressureInefficiencyCoefficient[i] * std::pow(pressure, degree - i);
+    fpc += pressureInefficiencyCoefficient[i] * (float)std::pow(pressure, degree - i);
   }
 
   return fpc / 60 / maxPumpClicksPerSecond;
