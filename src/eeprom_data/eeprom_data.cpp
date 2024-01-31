@@ -103,7 +103,7 @@ namespace {
     defaultData.warmupState = false;
     defaultData.scalesF1 = 3920;
     defaultData.scalesF2 = 4210;
-    defaultData.pumpFlowAtZero = 0.2225f;
+    defaultData.pumpFlowAtZero = 0.17333f;
     defaultData.ledState  = true;
     defaultData.ledDisco  = true;
     defaultData.ledR = 9;
@@ -145,7 +145,7 @@ bool eepromWrite(eepromValues_t eepromValuesNew) {
   || eepromValuesNew.steamSetPoint > 165
   || eepromValuesNew.mainDivider < 1
   || eepromValuesNew.brewDivider < 1
-  || eepromValuesNew.pumpFlowAtZero < 0.210f
+  || eepromValuesNew.pumpFlowAtZero < 0.160f
   || eepromValuesNew.pumpFlowAtZero > 0.310f
   || eepromValuesNew.scalesF1 < -20000
   || eepromValuesNew.scalesF2 > 20000)
