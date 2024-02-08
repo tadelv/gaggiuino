@@ -4,7 +4,12 @@
 
 #include "pindef.h"
 #include "peripherals.h"
-#include <Arduino.h>
+#ifdef UNIT_TEST
+    #include "ArduinoFake.h"
+#else
+    #include "Arduino.h"
+#endif
+
 
 static inline void pinInit(void) {
   #if defined(LEGO_VALVE_RELAY)
@@ -62,7 +67,16 @@ static inline void setSteamBoilerRelayOff(void) {
 //Function to get the state of the brew switch button
 //returns true or false based on the read P(power) value
 static inline bool brewState(void) {
+  #ifdef ASCASO//_MOMENTARY_SWITCH
+  static bool brewState = false;
+  uint8_t newButtonState = digitalRead(brewPin);
+  if (newButtonState == LOW) {
+    brewState = !brewState;
+  }
+  return brewState;
+  #else
   return digitalRead(brewPin) == LOW; // pin will be low when switch is ON.
+  #endif
 }
 
 // Returns HIGH when switch is OFF and LOW when ON
