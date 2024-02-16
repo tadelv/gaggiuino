@@ -69,9 +69,12 @@ static inline void setSteamBoilerRelayOff(void) {
 static inline bool brewState(void) {
   #ifdef ASCASO//_MOMENTARY_SWITCH
   static bool brewState = false;
+  static uint32_t time = millis();
   uint8_t newButtonState = digitalRead(brewPin);
-  if (newButtonState == LOW) {
+  if (newButtonState == LOW &&
+    time < millis() - 2 * 1000) {
     brewState = !brewState;
+    time = millis();
   }
   return brewState;
   #else
