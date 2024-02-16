@@ -5,30 +5,30 @@
 #include "pindef.h"
 #include "peripherals.h"
 #ifdef UNIT_TEST
-    #include "ArduinoFake.h"
+#include "ArduinoFake.h"
 #else
-    #include "Arduino.h"
+#include "Arduino.h"
 #endif
 
 
 static inline void pinInit(void) {
-  #if defined(LEGO_VALVE_RELAY)
-    pinMode(valvePin, OUTPUT_OPEN_DRAIN);
-  #else
-    pinMode(valvePin, OUTPUT);
-  #endif
+#if defined(LEGO_VALVE_RELAY)
+  pinMode(valvePin, OUTPUT_OPEN_DRAIN);
+#else
+  pinMode(valvePin, OUTPUT);
+#endif
   pinMode(relayPin, OUTPUT);
-  #ifdef steamValveRelayPin
+#ifdef steamValveRelayPin
   pinMode(steamValveRelayPin, OUTPUT);
-  #endif
-  #ifdef steamBoilerRelayPin
+#endif
+#ifdef steamBoilerRelayPin
   pinMode(steamBoilerRelayPin, OUTPUT);
-  #endif
-  pinMode(brewPin,  INPUT_PULLUP);
+#endif
+  pinMode(brewPin, INPUT_PULLUP);
   pinMode(steamPin, INPUT_PULLUP);
-  #ifdef waterPin
+#ifdef waterPin
   pinMode(waterPin, INPUT_PULLUP);
-  #endif
+#endif
 }
 
 // Actuating the heater element
@@ -41,45 +41,46 @@ static inline void setBoilerOff(void) {
 }
 
 static inline void setSteamValveRelayOn(void) {
-  #ifdef steamValveRelayPin
+#ifdef steamValveRelayPin
   digitalWrite(steamValveRelayPin, HIGH);  // steamValveRelayPin -> HIGH
-  #endif
+#endif
 }
 
 static inline void setSteamValveRelayOff(void) {
-  #ifdef steamValveRelayPin
+#ifdef steamValveRelayPin
   digitalWrite(steamValveRelayPin, LOW);  // steamValveRelayPin -> LOW
-  #endif
+#endif
 }
 
 static inline void setSteamBoilerRelayOn(void) {
-  #ifdef steamBoilerRelayPin
+#ifdef steamBoilerRelayPin
   digitalWrite(steamBoilerRelayPin, HIGH);  // steamBoilerRelayPin -> HIGH
-  #endif
+#endif
 }
 
 static inline void setSteamBoilerRelayOff(void) {
-  #ifdef steamBoilerRelayPin
+#ifdef steamBoilerRelayPin
   digitalWrite(steamBoilerRelayPin, LOW);  // steamBoilerRelayPin -> LOW
-  #endif
+#endif
 }
 
 //Function to get the state of the brew switch button
 //returns true or false based on the read P(power) value
 static inline bool brewState(void) {
-  #ifdef ASCASO//_MOMENTARY_SWITCH
+#ifdef ASCASO//_MOMENTARY_SWITCH
   static bool brewState = false;
   static uint32_t time = millis();
+  uint32_t currentMillis = millis();
   uint8_t newButtonState = digitalRead(brewPin);
   if (newButtonState == LOW &&
-    time < millis() - 2 * 1000) {
+    time < currentMillis - 2 * 1000) {
     brewState = !brewState;
-    time = millis();
+    time = currentMillis;
   }
   return brewState;
-  #else
+#else
   return digitalRead(brewPin) == LOW; // pin will be low when switch is ON.
-  #endif
+#endif
 }
 
 // Returns HIGH when switch is OFF and LOW when ON
@@ -89,27 +90,27 @@ static inline bool steamState(void) {
 }
 
 static inline bool waterPinState(void) {
-  #ifdef waterPin
+#ifdef waterPin
   return digitalRead(waterPin) == LOW; // pin will be low when switch is ON.
-  #else
+#else
   return false;
-  #endif
+#endif
 }
 
 static inline void openValve(void) {
-  #if defined LEGO_VALVE_RELAY
-    digitalWrite(valvePin, LOW);
-  #else
-    digitalWrite(valvePin, HIGH);
-  #endif
+#if defined LEGO_VALVE_RELAY
+  digitalWrite(valvePin, LOW);
+#else
+  digitalWrite(valvePin, HIGH);
+#endif
 }
 
 static inline void closeValve(void) {
-  #if defined LEGO_VALVE_RELAY
-    digitalWrite(valvePin, HIGH);
-  #else
-    digitalWrite(valvePin, LOW);
-  #endif
+#if defined LEGO_VALVE_RELAY
+  digitalWrite(valvePin, HIGH);
+#else
+  digitalWrite(valvePin, LOW);
+#endif
 }
 
 #endif
