@@ -25,7 +25,9 @@ static inline void pinInit(void) {
   pinMode(steamBoilerRelayPin, OUTPUT);
 #endif
   pinMode(brewPin, INPUT_PULLUP);
+#ifndef ASCASO
   pinMode(steamPin, INPUT_PULLUP);
+#endif
 #ifdef waterPin
   pinMode(waterPin, INPUT_PULLUP);
 #endif
@@ -86,7 +88,11 @@ static inline bool brewState(void) {
 // Returns HIGH when switch is OFF and LOW when ON
 // pin will be high when switch is ON.
 static inline bool steamState(void) {
+#ifdef steamPin
   return digitalRead(steamPin) == LOW; // pin will be low when switch is ON.
+#else
+  return false;
+#endif
 }
 
 static inline bool waterPinState(void) {

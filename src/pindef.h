@@ -12,10 +12,16 @@
 #define brewPin       PC14
 #define relayPin      PA15
 #define dimmerPin     PA1
+#if defined(ASCASO)
+// #define steamPin      PB15
+#else
 #define steamPin      PC15
+#endif
 #define valvePin      PC13
-#if defined(SINGLE_BOARD)
+#if defined(SINGLE_BOARD) && !defined(ASCASO)
 #define waterPin      PB15
+#elif defined(ASCASO)
+#define waterPin      PC15
 #else
 #define waterPin      PA12
 #endif
