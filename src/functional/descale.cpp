@@ -101,7 +101,12 @@ void backFlush(const SensorState &currentState) {
       flushDeactivated();
       return;
     }
-    else if (elapsedTime > 7000UL && currentState.smoothedPressure > 5.f) {
+    else if (
+      elapsedTime > 7000UL 
+      #ifndef ASCASO
+      && currentState.smoothedPressure > 5.f
+      #endif
+      ) {
       flushPhases();
     } else flushActivated();
   } else {
