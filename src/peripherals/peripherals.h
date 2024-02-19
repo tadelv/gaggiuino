@@ -69,13 +69,13 @@ static inline void setSteamBoilerRelayOff(void) {
 //Function to get the state of the brew switch button
 //returns true or false based on the read P(power) value
 static inline bool brewState(void) {
-#ifdef ASCASO//_MOMENTARY_SWITCH
+#ifdef ASCASO_MOMENTARY_SWITCH
   static bool brewState = false;
   static uint32_t time = millis();
   uint32_t currentMillis = millis();
   uint8_t newButtonState = digitalRead(brewPin);
   if (newButtonState == LOW &&
-    time < currentMillis - 2 * 1000) {
+    time < currentMillis - 1 * 1000) {
     brewState = !brewState;
     time = currentMillis;
   }
