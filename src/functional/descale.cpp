@@ -94,25 +94,43 @@ void solenoidBeat() {
 }
 
 void backFlush(const SensorState &currentState) {
+#ifndef ASCASO_FLUSH
   static unsigned long backflushTimer = millis();
   unsigned long elapsedTime = millis() - backflushTimer;
+#else  
+  static bool flushReady = false;
+#endif
+
   if (currentState.brewSwitchState) {
     if (flushCounter >= 11) {
       flushDeactivated();
       return;
     }
+#ifdef ASCASO_FLUSH
+    if (currentState.smoothedPressure > 9.f) {
+      flushReady = true;
+    }
+    if (flushReady) {
+      flushPhases();
+      return;
+    }
+    flushActivated(); 
+#else
     else if (
-      elapsedTime > 7000UL 
-      #ifndef ASCASO
-      && currentState.smoothedPressure > 5.f
-      #endif
+      elapsedTime > 7000UL && currentState.smoothedPressure > 5.f
       ) {
       flushPhases();
-    } else flushActivated();
+    }
+    else flushActivated();
+#endif
   } else {
     flushDeactivated();
     flushCounter = 0;
+#ifndef ASCASO_FLUSH
     backflushTimer = millis();
+#else
+    flushReady = false;
+#endif
   }
 }
 
