@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
     runAllPressureProfilerTests();
     runAllPumpTests();
     runAllProfileSerializerTests();
-    #ifdef ASCASO
+    #ifdef ASCASO_MOMENTARY_SWITCH
     runAllSwitchTests();
     #endif
     return UNITY_END();

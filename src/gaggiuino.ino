@@ -393,6 +393,11 @@ static void lcdRefresh(void) {
       lcdWarmupStateStop(); // Flagging warmup notification on Nextion needs to stop (if enabled)
     } else {
       lcdBrewTimerStop(); // nextion timer stop
+#ifdef ASCASO_MOMENTARY_SWITCH
+      if (currentState.brewSwitchState) {
+        lcdShowPopup("turn off brew switch!"); // because I forget
+      }
+#endif
     }
 
     pageRefreshTimer = millis() + REFRESH_SCREEN_EVERY;
