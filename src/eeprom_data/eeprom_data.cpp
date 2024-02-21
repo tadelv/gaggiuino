@@ -90,7 +90,7 @@ namespace {
     }
     // General brew settings
     defaultData.homeOnShotFinish = false;
-    defaultData.brewDeltaState = true;
+    defaultData.brewDeltaState = false;
     defaultData.basketPrefill = false;
     // System settings
     defaultData.steamSetPoint = 155;
@@ -101,9 +101,9 @@ namespace {
     defaultData.powerLineFrequency = 50;
     defaultData.lcdSleep = 16;
     defaultData.warmupState = false;
-    defaultData.scalesF1 = 3920;
+    defaultData.scalesF1 = -1021;
     defaultData.scalesF2 = 4210;
-    defaultData.pumpFlowAtZero = 0.17333f;
+    defaultData.pumpFlowAtZero = 0.16333f;
     defaultData.ledState  = true;
     defaultData.ledDisco  = true;
     defaultData.ledR = 9;
