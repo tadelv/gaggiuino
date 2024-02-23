@@ -889,7 +889,7 @@ static unsigned long getTimeSinceInit(void) {
 }
 
 static void fillBoiler(void) {
-  #if defined LEGO_VALVE_RELAY || defined SINGLE_BOARD
+  #if (defined LEGO_VALVE_RELAY || defined SINGLE_BOARD) && undefined ASCASO
 
   if (systemState.startupInitFinished) {
     return;
