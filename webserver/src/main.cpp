@@ -15,7 +15,7 @@ void setup() {
   stmCommsInit(Serial1);
   wifiSetup();
   webServerSetup();
-  bleScalesInit();
+  // bleScalesInit();
   vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
 }
 
@@ -35,5 +35,5 @@ void onShotSnapshotReceived(ShotSnapshot& shotData) {
 }
 
 void onScalesTareReceived() {
-  bleScalesTare();
+  // bleScalesTare();
 }
