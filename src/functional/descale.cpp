@@ -151,24 +151,28 @@ void flushDeactivated(void) {
 
 void flushPhases(void) {
   static long timer = millis();
-  if (flushCounter <= 10) {
-    if (flushCounter % 2) {
-      if (millis() - timer >= 5000) {
+  static int phaseDuration = 7000;
+  if (flushCounter > 10) {
+    flushDeactivated();
+    timer = millis();
+    return;
+  }
+  switch (flushCounter % 2) {
+    case 1:
+      if (millis() - timer >= phaseDuration) {
         flushCounter++;
         timer = millis();
       }
       openValve();
       setPumpFullOn();
-    } else {
-      if (millis() - timer >= 5000) {
+      break;
+    case 0:
+      if (millis() - timer >= phaseDuration) {
         flushCounter++;
         timer = millis();
       }
       closeValve();
       setPumpOff();
-    }
-  } else {
-    flushDeactivated();
-    timer = millis();
+      break;
   }
 }
