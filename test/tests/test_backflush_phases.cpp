@@ -48,7 +48,9 @@ void test_backflush_phases(void) {
     112031
     );
   When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
-
+  
+  flushCounter = 0;
+  
   flushPhases();
   TEST_ASSERT_EQUAL(1, flushCounter);
   flushPhases();
@@ -76,6 +78,29 @@ void test_backflush_phases(void) {
 
 }
 
+void test_backflush_phases_noskip(void) {
+  ArduinoFakeReset();
+  When(Method(ArduinoFake(), millis)).Return(
+    78022,
+    79023,
+    80024,
+    80025
+  );
+  When(Method(ArduinoFake(), digitalWrite)).AlwaysReturn();
+
+  flushCounter = 0;
+  flushPhases();
+  TEST_ASSERT_EQUAL(0, flushCounter);
+  flushPhases();
+  TEST_ASSERT_EQUAL(0, flushCounter);
+  flushPhases();
+  TEST_ASSERT_EQUAL(0, flushCounter);
+
+  Verify(Method(ArduinoFake(), digitalWrite).Using(valvePin, LOW)).Exactly(3_Times);
+
+}
+
 void runAllFlushTests(void) {
   RUN_TEST(test_backflush_phases);
+  RUN_TEST(test_backflush_phases_noskip);
 }

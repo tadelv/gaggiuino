@@ -159,20 +159,16 @@ void flushPhases(void) {
   }
   switch (flushCounter % 2) {
     case 1:
-      if (millis() - timer >= phaseDuration) {
-        flushCounter++;
-        timer = millis();
-      }
       openValve();
       setPumpFullOn();
       break;
     case 0:
-      if (millis() - timer >= phaseDuration) {
-        flushCounter++;
-        timer = millis();
-      }
       closeValve();
       setPumpOff();
       break;
+  }
+  if (millis() - timer >= phaseDuration) {
+    flushCounter++;
+    timer = millis();
   }
 }
