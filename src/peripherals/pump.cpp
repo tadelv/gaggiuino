@@ -4,6 +4,7 @@
 #include <PSM.h>
 #include "utils.h"
 #include "internal_watchdog.h"
+#include "log.h"
 
 PSM pump(zcPin, dimmerPin, PUMP_RANGE, ZC_MODE, 1, 6);
 
@@ -32,11 +33,33 @@ void pumpInit(const int powerLineFrequency, const float pumpFlowAtZero) {
 }
 
 // Function that returns the percentage of clicks the pump makes in it's current phase
-inline float getPumpPct(const float targetPressure, const float flowRestriction, const SensorState& currentState) {
+inline float getPumpPct(const float targetPressure, const float flowRestriction, const SensorState& currentState, const bool formula = true) {
   if (targetPressure == 0.f) {
     return 0.f;
   }
 
+  if (formula)
+  {
+    if (currentState.smoothedPressure <= 0.f)
+    {
+      return getClicksPerSecondForFlow(flowRestriction > 0 ? flowRestriction : (flowPerClickAtZeroBar * maxPumpClicksPerSecond),
+                                       currentState.smoothedPressure) /
+             (float)maxPumpClicksPerSecond;
+    }
+    LOG_DEBUG("current flow: %f", currentState.smoothedPumpFlow);
+    LOG_DEBUG("current press: %f", currentState.smoothedPressure);
+    float resistance = currentState.smoothedPressure / currentState.smoothedPumpFlow;
+    LOG_DEBUG("resistance: %f", resistance);
+    float targetFlow = targetPressure / resistance;
+    LOG_DEBUG("target flow: %f", targetFlow);
+    const float kFactor = 0.8;
+    float suggestedFlow = targetFlow + kFactor * (targetPressure - currentState.smoothedPressure);
+    LOG_DEBUG("suggested flow: %f", suggestedFlow);
+    float suggestedPumpPct = getClicksPerSecondForFlow(suggestedFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
+    LOG_DEBUG("suggested pct: %f", suggestedPumpPct);
+
+    return fminf(1.f, fmaxf(suggestedPumpPct, 0));
+  }
   float diff = targetPressure - currentState.smoothedPressure;
   float maxPumpPct = flowRestriction <= 0.f ? 1.f : getClicksPerSecondForFlow(flowRestriction, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
   float pumpPctToMaintainFlow = getClicksPerSecondForFlow(currentState.smoothedPumpFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
@@ -61,8 +84,8 @@ inline float getPumpPct(const float targetPressure, const float flowRestriction,
 // - expected target
 // - flow
 // - pressure direction
-void setPumpPressure(const float targetPressure, const float flowRestriction, const SensorState& currentState) {
-  float pumpPct = getPumpPct(targetPressure, flowRestriction, currentState);
+void setPumpPressure(const float targetPressure, const float flowRestriction, const SensorState& currentState, const bool formula = false) {
+  float pumpPct = getPumpPct(targetPressure, flowRestriction, currentState, formula);
   setPumpToRawValue((uint8_t)(pumpPct * PUMP_RANGE));
 }
 
