@@ -690,6 +690,12 @@ void onProfileReceived(Profile& newProfile) {
 }
 
 static void profiling(void) {
+
+  Defer defer([]() {
+    // Keep that water at temp
+    justDoCoffee(runningCfg, currentState, brewActive);
+  });
+
   if (brewActive) { //runs this only when brew button activated and pressure profile selected
     uint32_t timeInShot = millis() - brewingTimer;
     phaseProfiler.updatePhase(timeInShot, currentState);
@@ -705,7 +711,7 @@ static void profiling(void) {
       float newBarValue = currentPhase.getTarget();
       float flowRestriction =  currentPhase.getRestriction();
       openValve();
-      setPumpPressure(newBarValue, flowRestriction, currentState);
+      setPumpPressure(newBarValue, flowRestriction, currentState, runningCfg.brewDeltaState);
     } else {
       float newFlowValue = currentPhase.getTarget();
       float pressureRestriction =  currentPhase.getRestriction();
@@ -716,8 +722,6 @@ static void profiling(void) {
     setPumpOff();
     closeValve();
   }
-  // Keep that water at temp
-  justDoCoffee(runningCfg, currentState, brewActive);
 }
 
 static void manualFlowControl(void) {
