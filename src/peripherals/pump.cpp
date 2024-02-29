@@ -54,10 +54,10 @@ inline float getPumpPct(const float targetPressure, const float flowRestriction,
     LOG_DEBUG("target flow: %f", targetFlow);
     float kFactor = 0.8;
     float pressureDiff = targetPressure - currentState.smoothedPressure;
-     if ( pressureDiff < 3 || currentState.pressureChangeSpeed > 0.5)
+     if ( pressureDiff < 5 || currentState.pressureChangeSpeed > 0.3)
     {
       // decrease factor
-      kFactor = fabs(pressureDiff) / (10 * currentState.pressureChangeSpeed > 1 ? (currentState.pressureChangeSpeed * 2) : 1);
+      kFactor = fabs(pressureDiff) / 10;//(10 * currentState.pressureChangeSpeed > 1 ? (currentState.pressureChangeSpeed * 2) : 1);
     }
     float suggestedFlow = targetFlow + kFactor * ((targetPressure * 0.9f) - currentState.smoothedPressure);
     LOG_DEBUG("suggested flow: %f", suggestedFlow);
