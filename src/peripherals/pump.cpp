@@ -37,6 +37,36 @@ inline float getPumpPct(const float targetPressure, const float flowRestriction,
     return 0.f;
   }
 
+  if (formula)
+  {
+    if (currentState.smoothedPressure <= 0.f)
+    {
+      return getClicksPerSecondForFlow(flowRestriction > 0 ? flowRestriction : (flowPerClickAtZeroBar * maxPumpClicksPerSecond),
+                                       currentState.smoothedPressure) /
+             (float)maxPumpClicksPerSecond;
+    }
+    LOG_DEBUG("current flow: %f", currentState.smoothedPumpFlow);
+    LOG_DEBUG("current press: %f", currentState.smoothedPressure);
+    float resistance = currentState.smoothedPressure / currentState.smoothedPumpFlow;
+    LOG_DEBUG("resistance: %f", resistance);
+    float targetFlow = targetPressure / resistance;
+    LOG_DEBUG("target flow: %f", targetFlow);
+    float pressureDiff = targetPressure - currentState.smoothedPressure;
+    float kFactor = fabs(pressureDiff) / 10; // 0.8;
+    #if 0
+    if (pressureDiff < 5 || currentState.pressureChangeSpeed > 0.3)
+    {
+      // decrease factor
+      kFactor = fabs(pressureDiff) / 10;//(10 * currentState.pressureChangeSpeed > 1 ? (currentState.pressureChangeSpeed * 2) : 1);
+    }
+    #endif
+    float suggestedFlow = targetFlow + kFactor * ((targetPressure * 0.9f) - currentState.smoothedPressure);
+    LOG_DEBUG("suggested flow: %f", suggestedFlow);
+    float suggestedPumpPct = getClicksPerSecondForFlow(suggestedFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
+    LOG_DEBUG("suggested pct: %f", suggestedPumpPct);
+
+    return fminf(1.f, fmaxf(suggestedPumpPct, 0));
+  }
   float diff = targetPressure - currentState.smoothedPressure;
   float maxPumpPct = flowRestriction <= 0.f ? 1.f : getClicksPerSecondForFlow(flowRestriction, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
   float pumpPctToMaintainFlow = getClicksPerSecondForFlow(currentState.smoothedPumpFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;

@@ -8,6 +8,8 @@
 #include "scales/ble_scales.h"
 #include "./log/log.h"
 
+void lcdInit();
+
 void setup() {
   LOG_INIT();
   REMOTE_LOG_INIT([](std::string message) {wsSendLog(message);});
@@ -16,6 +18,7 @@ void setup() {
   wifiSetup();
   webServerSetup();
   // bleScalesInit();
+  lcdInit();
   vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
 }
 
@@ -36,4 +39,8 @@ void onShotSnapshotReceived(ShotSnapshot& shotData) {
 
 void onScalesTareReceived() {
   // bleScalesTare();
+}
+
+void lcdInit() {
+  
 }
