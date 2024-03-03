@@ -30,10 +30,7 @@ extern lv_obj_t *ui_Screen1;
 extern lv_obj_t *ui_TabView1;
 extern lv_obj_t *ui_TabPage1;
 extern lv_obj_t *ui_TabPage2;
-extern lv_obj_t *ui_Chart1;
 extern lv_obj_t *ui_TabPage3;
-extern lv_obj_t *ui_Switch1;
-extern lv_obj_t *ui_Checkbox1;
 extern lv_obj_t *ui____initial_actions0;
 
 

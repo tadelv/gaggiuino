@@ -7,8 +7,8 @@
 #include "server/websocket/websocket.h"
 #include "scales/ble_scales.h"
 #include "./log/log.h"
-
-void lcdInit();
+#include "ui/ui.h"
+#include <esp32_smartdisplay.h>
 
 void setup() {
   LOG_INIT();
@@ -18,12 +18,19 @@ void setup() {
   wifiSetup();
   webServerSetup();
   // bleScalesInit();
-  lcdInit();
-  vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
+  // lcdInit();
+  // vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
+  smartdisplay_init();
+  auto disp = lv_disp_get_default();
+  lv_disp_set_rotation(disp, LV_DISP_ROT_270);
+
+// touch_calibration_data;
+  ui_init();
 }
 
 void loop() {
-  vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
+  // vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
+  lv_timer_handler(); /* let the GUI do its work */
 }
 
 // ------------------------------------------------------------------------
@@ -39,8 +46,4 @@ void onShotSnapshotReceived(ShotSnapshot& shotData) {
 
 void onScalesTareReceived() {
   // bleScalesTare();
-}
-
-void lcdInit() {
-  
 }
