@@ -5,8 +5,14 @@
 #include "utils.h"
 #include "internal_watchdog.h"
 #include "log.h"
+#include "CriticallyDampedController.h"
 
 PSM pump(zcPin, dimmerPin, PUMP_RANGE, ZC_MODE, 1, 6);
+CriticallyDampedController controller(
+  0.5f, 
+  0.3f
+);
+
 
 float flowPerClickAtZeroBar = 0.216f;
 int maxPumpClicksPerSecond = 50;
@@ -40,21 +46,17 @@ inline float getPumpPct(const float targetPressure, const float flowRestriction,
 
   if (formula)
   {
-    if (currentState.smoothedPressure <= 0.f)
-    {
-      return getClicksPerSecondForFlow(flowRestriction > 0 ? flowRestriction : (flowPerClickAtZeroBar * maxPumpClicksPerSecond),
-                                       currentState.smoothedPressure) /
-             (float)maxPumpClicksPerSecond;
-    }
     LOG_DEBUG("current flow: %f", currentState.smoothedPumpFlow);
     LOG_DEBUG("current press: %f", currentState.smoothedPressure);
+    LOG_DEBUG("target pressure: %f", targetPressure);
     float resistance = currentState.smoothedPressure / currentState.smoothedPumpFlow;
     LOG_DEBUG("resistance: %f", resistance);
-    float targetFlow = targetPressure / resistance;
+    float control_output = controller.calculate(targetPressure, currentState.smoothedPressure);
+    LOG_DEBUG("control output: %f", control_output);
+    float targetFlow = fmaxf(currentState.smoothedPumpFlow + control_output, 0);
     LOG_DEBUG("target flow: %f", targetFlow);
-    float pressureDiff = targetPressure - currentState.smoothedPressure;
-    float kFactor = 0.5;
-    float suggestedFlow = targetFlow + kFactor * ((targetPressure * 0.9f) - currentState.smoothedPressure);
+
+    float suggestedFlow = flowRestriction > 0 ? fminf(targetFlow, flowRestriction) : targetFlow;
     LOG_DEBUG("suggested flow: %f", suggestedFlow);
     float suggestedPumpPct = getClicksPerSecondForFlow(suggestedFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
     LOG_DEBUG("suggested pct: %f", suggestedPumpPct);
