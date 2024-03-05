@@ -22,4 +22,6 @@ float getPumpFlow(const float cps, const float pressure);
 float getPumpFlowPerClick(const float pressure);
 float getClicksPerSecondForFlow(const float flow, const float pressure);
 void setPumpFlow(const float targetFlow, const float pressureRestriction, const SensorState &currentState);
+
+void resetController();
 #endif

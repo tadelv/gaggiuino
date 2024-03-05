@@ -5,12 +5,13 @@
 #include "utils.h"
 #include "internal_watchdog.h"
 #include "log.h"
-#include "CriticallyDampedController.h"
+#include "PIDController.h"
 
 PSM pump(zcPin, dimmerPin, PUMP_RANGE, ZC_MODE, 1, 6);
-CriticallyDampedController controller(
-  0.5f, 
-  0.3f
+PIDController controller(
+  0.8f, 
+  0.01f,
+  0.05f
 );
 
 
@@ -51,7 +52,9 @@ inline float getPumpPct(const float targetPressure, const float flowRestriction,
     LOG_DEBUG("target pressure: %f", targetPressure);
     float resistance = currentState.smoothedPressure / currentState.smoothedPumpFlow;
     LOG_DEBUG("resistance: %f", resistance);
-    float control_output = controller.calculate(targetPressure, currentState.smoothedPressure);
+    uint32_t currentMillis = millis();
+    uint32_t delta_t = currentMillis - currentState.lastPumpCalcTime;
+    float control_output = controller.calculate(targetPressure, currentState.smoothedPressure, delta_t / 1000.f);
     LOG_DEBUG("control output: %f", control_output);
     float targetFlow = fmaxf(currentState.smoothedPumpFlow + control_output, 0);
     LOG_DEBUG("target flow: %f", targetFlow);
@@ -169,4 +172,8 @@ void setPumpFlow(const float targetFlow, const float pressureRestriction, const 
     float pumpPct = getClicksPerSecondForFlow(targetFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
     setPumpToRawValue(pumpPct * PUMP_RANGE);
   }
+}
+
+void resetController() {
+ controller.reset(); 
 }

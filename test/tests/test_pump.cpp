@@ -25,7 +25,9 @@ void test_pump_pct_for_pressure(void) {
   When(Method(ArduinoFake(), millis)).Return(2000);
   testState.smoothedPressure = 0.f;
   testState.smoothedPumpFlow = 0.f;
+  testState.lastPumpCalcTime = 1900;
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState), -1);
+  resetController();
 
   // maintaint 2ml/s flow
   When(Method(ArduinoFake(), millis)).Return(2000);
@@ -33,6 +35,7 @@ void test_pump_pct_for_pressure(void) {
   testState.smoothedPumpFlow = 0.f;
   float pctFor2Mls = getClicksPerSecondForFlow(2.f, 0) / (float)maxPumpClicksPerSecond;
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(pctFor2Mls, getPumpPct(6.f, 2.f, testState), -1);
+  resetController();
 
   // Pressure target maintain #1
   When(Method(ArduinoFake(), millis)).Return(2000);
@@ -40,14 +43,16 @@ void test_pump_pct_for_pressure(void) {
   testState.smoothedPressure = 6.f;
   testState.smoothedPumpFlow = getPumpFlow(maxPumpClicksPerSecond, 6);
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState), -1);
+  resetController();
 
   // Pressure target maintain #2
   When(Method(ArduinoFake(), millis)).Return(2000);
   printf("pressure target maintain #2\n");
   testState.smoothedPressure = 2.f;
   testState.smoothedPumpFlow = getPumpFlow(getClicksPerSecondForFlow(2.f, 2.f), 2.f);
-  // TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState), 1);
-  TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState, false), -1);
+  TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState), -1);
+  // TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState, false), -1);
+  resetController();
 
   // test pressure target is lower than current
   When(Method(ArduinoFake(), millis)).Return(2000);
@@ -57,6 +62,7 @@ void test_pump_pct_for_pressure(void) {
   // TODO: figure out the slope
   printf("ref pct: %f\n", getPumpPct(6.f, 0.f, testState, false));
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(0, getPumpPct(6.f, 0.f, testState), -1);
+  resetController();
 
   When(Method(ArduinoFake(), millis)).Return(2000);
   printf("pressure target is higher than current\n");
@@ -66,6 +72,7 @@ void test_pump_pct_for_pressure(void) {
   // TODO: figure out the slope
   printf("ref pct: %f\n", getPumpPct(3.f, 0.f, testState, false));
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(3.f, 0.f, testState), -1);
+  resetController();
 
   When(Method(ArduinoFake(), millis)).Return(2000);
   printf("pressure target is much higher than current\n");
@@ -75,6 +82,7 @@ void test_pump_pct_for_pressure(void) {
   // TODO: figure out the slope
   printf("ref pct: %f\n", getPumpPct(6.f, 0.f, testState, false));
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState), 0);
+  resetController();
 
   // printf("decent simulator\n");
   // testState.smoothedPressure = 8.9f;

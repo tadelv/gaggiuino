@@ -28,6 +28,8 @@ struct SensorState {
   long pumpClicks;
   uint16_t waterLvl;
   bool tofReady;
+  // Pump PID
+  uint32_t lastPumpCalcTime;
 };
 
 struct SensorStateSnapshot {

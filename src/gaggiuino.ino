@@ -295,6 +295,7 @@ static void modeSelect(void) {
       else {
         profiling();
         steamTime = millis();
+        currentState.lastPumpCalcTime = steamTime;
       }
       break;
     case OPERATION_MODES::OPMODE_manual:
@@ -773,6 +774,7 @@ static void brewParamsReset(void) {
   currentState.pumpFlow    = 0.f;
   currentState.weight      = 0.f;
   currentState.waterPumped = 0.f;
+  currentState.lastPumpCalcTime = millis();
   brewingTimer             = millis();
   flowTimer                = brewingTimer;
   systemHealthTimer        = brewingTimer + HEALTHCHECK_EVERY;
@@ -780,6 +782,7 @@ static void brewParamsReset(void) {
   weightMeasurements.clear();
   predictiveWeight.reset();
   phaseProfiler.reset();
+  resetController();
 }
 
 static bool sysReadinessCheck(void) {
