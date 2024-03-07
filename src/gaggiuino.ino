@@ -763,7 +763,7 @@ static void profiling(void) {
       float newBarValue = currentPhase.getTarget();
       float flowRestriction =  currentPhase.getRestriction();
       openValve();
-      setPumpPressure(newBarValue, flowRestriction, currentState, runningCfg.brewDeltaState);
+      setPumpPressure(newBarValue, flowRestriction, currentState);
     } else {
       float newFlowValue = currentPhase.getTarget();
       float pressureRestriction =  currentPhase.getRestriction();

@@ -40,50 +40,30 @@ void pumpInit(const int powerLineFrequency, const float pumpFlowAtZero) {
 }
 
 // Function that returns the percentage of clicks the pump makes in it's current phase
-inline float getPumpPct(const float targetPressure, const float flowRestriction, const SensorState& currentState, const bool formula = true) {
+inline float getPumpPct(const float targetPressure, const float flowRestriction, const SensorState& currentState) {
   if (targetPressure == 0.f) {
     return 0.f;
   }
 
-  if (formula)
-  {
-    LOG_DEBUG("current flow: %f", currentState.smoothedPumpFlow);
-    LOG_DEBUG("current press: %f", currentState.smoothedPressure);
-    LOG_DEBUG("target pressure: %f", targetPressure);
-    float resistance = currentState.smoothedPressure / currentState.smoothedPumpFlow;
-    LOG_DEBUG("resistance: %f", resistance);
-    uint32_t currentMillis = millis();
-    uint32_t delta_t = currentMillis - currentState.lastPumpCalcTime;
-    LOG_DEBUG("delta t: %l", delta_t);
-    float control_output = controller.calculate(targetPressure, currentState.smoothedPressure, delta_t / 1000.f);
-    LOG_DEBUG("control output: %f", control_output);
-    float targetFlow = fmaxf(currentState.smoothedPumpFlow + control_output, 0);
-    LOG_DEBUG("target flow: %f", targetFlow);
+  LOG_DEBUG("current flow: %f", currentState.smoothedPumpFlow);
+  LOG_DEBUG("current press: %f", currentState.smoothedPressure);
+  LOG_DEBUG("target pressure: %f", targetPressure);
+  float resistance = currentState.smoothedPressure / currentState.smoothedPumpFlow;
+  LOG_DEBUG("resistance: %f", resistance);
+  uint32_t currentMillis = millis();
+  uint32_t delta_t = currentMillis - currentState.lastPumpCalcTime;
+  LOG_DEBUG("delta t: %u", delta_t);
+  float control_output = controller.calculate(targetPressure, currentState.smoothedPressure, delta_t / 1000.f);
+  LOG_DEBUG("control output: %f", control_output);
+  float targetFlow = fmaxf(currentState.smoothedPumpFlow + control_output, 0);
+  LOG_DEBUG("target flow: %f", targetFlow);
 
-    float suggestedFlow = flowRestriction > 0 ? fminf(targetFlow, flowRestriction) : targetFlow;
-    LOG_DEBUG("suggested flow: %f", suggestedFlow);
-    float suggestedPumpPct = getClicksPerSecondForFlow(suggestedFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
-    LOG_DEBUG("suggested pct: %f", suggestedPumpPct);
+  float suggestedFlow = flowRestriction > 0 ? fminf(targetFlow, flowRestriction) : targetFlow;
+  LOG_DEBUG("suggested flow: %f", suggestedFlow);
+  float suggestedPumpPct = getClicksPerSecondForFlow(suggestedFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
+  LOG_DEBUG("suggested pct: %f", suggestedPumpPct);
 
-    return fminf(1.f, fmaxf(suggestedPumpPct, 0));
-  }
-  float diff = targetPressure - currentState.smoothedPressure;
-  float maxPumpPct = flowRestriction <= 0.f ? 1.f : getClicksPerSecondForFlow(flowRestriction, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
-  float pumpPctToMaintainFlow = getClicksPerSecondForFlow(currentState.smoothedPumpFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
-
-  if (diff > 2.f) {
-    return fminf(maxPumpPct, 0.25f + 0.2f * diff);
-  }
-
-  if (diff > 0.f) {
-    return fminf(maxPumpPct, pumpPctToMaintainFlow * 0.95f + 0.1f + 0.2f * diff);
-  }
-
-  if (currentState.pressureChangeSpeed < 0) {
-    return fminf(maxPumpPct, pumpPctToMaintainFlow * 0.2f);
-  }
-
-  return 0;
+  return fminf(1.f, fmaxf(suggestedPumpPct, 0));
 }
 
 // Sets the pump output based on a couple input params:
@@ -91,8 +71,8 @@ inline float getPumpPct(const float targetPressure, const float flowRestriction,
 // - expected target
 // - flow
 // - pressure direction
-void setPumpPressure(const float targetPressure, const float flowRestriction, const SensorState& currentState, const bool formula = false) {
-  float pumpPct = getPumpPct(targetPressure, flowRestriction, currentState, formula);
+void setPumpPressure(const float targetPressure, const float flowRestriction, const SensorState& currentState) {
+  float pumpPct = getPumpPct(targetPressure, flowRestriction, currentState);
   setPumpToRawValue((uint8_t)(pumpPct * PUMP_RANGE));
 }
 
