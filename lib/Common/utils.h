@@ -14,4 +14,14 @@ enum class TransitionCurve {
 
 float mapRange(float sourceNumber, float fromA, float fromB, float toA, float toB, int decimalPrecision, TransitionCurve transition = TransitionCurve::LINEAR);
 
+class Defer
+{
+public:
+  Defer(std::function<void()> func) : func(func) {}
+  ~Defer() { func(); }
+
+private:
+  std::function<void()> func;
+};
+
 #endif

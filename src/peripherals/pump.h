@@ -14,7 +14,7 @@ void setPumpPressure(const float targetPressure, const float flowRestriction, co
 void setPumpOff(void);
 void setPumpFullOn(void);
 void setPumpToRawValue(const uint8_t val);
-long  getAndResetClickCounter(void);
+long getAndResetClickCounter(void);
 int getCPS(void);
 void pumpPhaseShift(void);
 void pumpStopAfter(const uint8_t val);
@@ -22,4 +22,8 @@ float getPumpFlow(const float cps, const float pressure);
 float getPumpFlowPerClick(const float pressure);
 float getClicksPerSecondForFlow(const float flow, const float pressure);
 void setPumpFlow(const float targetFlow, const float pressureRestriction, const SensorState &currentState);
+
+void resetController();
+void setControllerParams(float *kp, float *ki, float *kd);
+void getControllerParams(float *kp, float *ki, float *kd);
 #endif

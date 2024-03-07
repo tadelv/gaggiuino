@@ -151,7 +151,7 @@ void flushDeactivated(void) {
 
 void flushPhases(void) {
   static long timer = millis();
-  static int phaseDuration = 7000;
+  static unsigned int phaseDuration = 7000;
   if (flushCounter > 10) {
     flushDeactivated();
     timer = millis();
