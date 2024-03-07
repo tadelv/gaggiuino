@@ -27,20 +27,26 @@ SystemState systemState;
 LED led;
 TOF tof;
 
-void printPumpData() {
+
+void printPumpParamsData()
+{
+#if defined(DEBUG_COMMS_ENABLED) //what?
   float kp = 0, ki = 0, kd = 0;
   getControllerParams(&kp, &ki, &kd);
   LOG_INFO("kp: %f, ki: %f, kd: %f", kp, ki, kd);
+#endif
 }
-
-void setPumpParams(float kp, float ki, float kd) {
+#if defined(DEBUG_COMMS_ENABLED)
+void setPumpParams(float kp, float ki, float kd)
+{
   setControllerParams(&kp, &ki, &kd);
   float kp1 = 0, ki1 = 0, kd1 = 0;
   getControllerParams(&kp1, &ki1, &kd1);
   LOG_INFO("params set: kp: %f, ki: %f, kd: %f", kp, ki, kd);
 }
 
-void printState() {
+void printState()
+{
   LOG_INFO("Field values:\n");
   LOG_INFO("brewSwitchState: %d\n", currentState.brewSwitchState);
   LOG_INFO("steamSwitchState: %d\n", currentState.steamSwitchState);
@@ -67,13 +73,15 @@ void printState() {
   LOG_INFO("tofReady: %d\n", currentState.tofReady);
   LOG_INFO("lastPumpCalcTime: %u\n", currentState.lastPumpCalcTime);
 }
+#endif
 
-void setup(void) {
+void setup(void)
+{
   LOG_INIT();
-  #ifdef DEBUG_COMMS_ENABLED
+  #if defined(DEBUG_COMMS_ENABLED)
   debugInit();
   extern debug_callbacks_t debug_callbacks;
-  debug_callbacks.pumpControllerData = printPumpData;
+  debug_callbacks.pumpControllerData = printPumpParamsData;
   debug_callbacks.pumpControllerSet = setPumpParams;
   debug_callbacks.systemStatus = printState;
   #endif
@@ -155,7 +163,7 @@ void setup(void) {
 
 //Main loop where all the logic is continuously run
 void loop(void) {
-#ifdef DEBUG_COMMS_ENABLED
+#if defined(DEBUG_COMMS_ENABLED)
   readDebugCommand();
 #endif
   fillBoiler();
