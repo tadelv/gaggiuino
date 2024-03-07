@@ -9,9 +9,9 @@
 
 PSM pump(zcPin, dimmerPin, PUMP_RANGE, ZC_MODE, 1, 6);
 PIDController controller(
-  0.8f, 
-  0.02f,
-  0.1f
+  0.7f, 
+  0.01f,
+  0.3f
 );
 
 

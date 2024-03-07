@@ -4,6 +4,7 @@
 struct debug_callbacks_t {
   void (*pumpControllerData)();
   void (*pumpControllerSet)(float, float, float);
+  void (*systemStatus)();
 };
 
 void debugInit();

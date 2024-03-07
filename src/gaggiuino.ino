@@ -40,6 +40,34 @@ void setPumpParams(float kp, float ki, float kd) {
   LOG_INFO("params set: kp: %f, ki: %f, kd: %f", kp, ki, kd);
 }
 
+void printState() {
+  LOG_INFO("Field values:\n");
+  LOG_INFO("brewSwitchState: %d\n", currentState.brewSwitchState);
+  LOG_INFO("steamSwitchState: %d\n", currentState.steamSwitchState);
+  LOG_INFO("hotWaterSwitchState: %d\n", currentState.hotWaterSwitchState);
+  LOG_INFO("isSteamForgottenON: %d\n", currentState.isSteamForgottenON);
+  LOG_INFO("scalesPresent: %d\n", currentState.scalesPresent);
+  LOG_INFO("tarePending: %d\n", currentState.tarePending);
+  LOG_INFO("temperature: %.2f °C\n", currentState.temperature);
+  LOG_INFO("waterTemperature: %.2f °C\n", currentState.waterTemperature);
+  LOG_INFO("pressure: %.2f bar\n", currentState.pressure);
+  LOG_INFO("pressureChangeSpeed: %.2f bar/s\n", currentState.pressureChangeSpeed);
+  LOG_INFO("pumpFlow: %.2f ml/s\n", currentState.pumpFlow);
+  LOG_INFO("pumpFlowChangeSpeed: %.2f ml/s^2\n", currentState.pumpFlowChangeSpeed);
+  LOG_INFO("waterPumped: %.2f\n", currentState.waterPumped);
+  LOG_INFO("weightFlow: %.2f\n", currentState.weightFlow);
+  LOG_INFO("weight: %.2f\n", currentState.weight);
+  LOG_INFO("shotWeight: %.2f\n", currentState.shotWeight);
+  LOG_INFO("smoothedPressure: %.2f\n", currentState.smoothedPressure);
+  LOG_INFO("smoothedPumpFlow: %.2f\n", currentState.smoothedPumpFlow);
+  LOG_INFO("smoothedWeightFlow: %.2f\n", currentState.smoothedWeightFlow);
+  LOG_INFO("consideredFlow: %.2f\n", currentState.consideredFlow);
+  LOG_INFO("pumpClicks: %ld\n", currentState.pumpClicks);
+  LOG_INFO("waterLvl: %u\n", currentState.waterLvl);
+  LOG_INFO("tofReady: %d\n", currentState.tofReady);
+  LOG_INFO("lastPumpCalcTime: %u\n", currentState.lastPumpCalcTime);
+}
+
 void setup(void) {
   LOG_INIT();
   #ifdef DEBUG_COMMS_ENABLED
@@ -47,6 +75,7 @@ void setup(void) {
   extern debug_callbacks_t debug_callbacks;
   debug_callbacks.pumpControllerData = printPumpData;
   debug_callbacks.pumpControllerSet = setPumpParams;
+  debug_callbacks.systemStatus = printState;
   #endif
   LOG_INFO("Gaggiuino (fw: %s) booting", AUTO_VERSION);
 
