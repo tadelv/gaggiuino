@@ -27,8 +27,27 @@ SystemState systemState;
 LED led;
 TOF tof;
 
+void printPumpData() {
+  float kp = 0, ki = 0, kd = 0;
+  getControllerParams(&kp, &ki, &kd);
+  LOG_INFO("kp: %f, ki: %f, kd: %f", kp, ki, kd);
+}
+
+void setPumpParams(float kp, float ki, float kd) {
+  setControllerParams(&kp, &ki, &kd);
+  float kp1 = 0, ki1 = 0, kd1 = 0;
+  getControllerParams(&kp1, &ki1, &kd1);
+  LOG_INFO("params set: kp: %f, ki: %f, kd: %f", kp, ki, kd);
+}
+
 void setup(void) {
   LOG_INIT();
+  #ifdef DEBUG_COMMS_ENABLED
+  debugInit();
+  extern debug_callbacks_t debug_callbacks;
+  debug_callbacks.pumpControllerData = printPumpData;
+  debug_callbacks.pumpControllerSet = setPumpParams;
+  #endif
   LOG_INFO("Gaggiuino (fw: %s) booting", AUTO_VERSION);
 
   // Various pins operation mode handling
@@ -107,6 +126,9 @@ void setup(void) {
 
 //Main loop where all the logic is continuously run
 void loop(void) {
+#ifdef DEBUG_COMMS_ENABLED
+  readDebugCommand();
+#endif
   fillBoiler();
   if (lcdCurrentPageId != lcdLastCurrentPageId) pageValuesRefresh();
   lcdListen();

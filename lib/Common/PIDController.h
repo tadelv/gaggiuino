@@ -9,8 +9,12 @@ public:
   float calculate(float setpoint, float process_variable, float dt);
   void reset();
 
-private:
-  float kp_;         // Proportional gain
+  void setKp(float kp);
+  void setKi(float ki);
+  void setKd(float kd);
+  void getParams(float *kp, float *ki, float *kd);
+
+      private : float kp_; // Proportional gain
   float ki_;         // Integral gain
   float kd_;         // Derivative gain
   float integral_;   // Integral of the error

@@ -24,4 +24,6 @@ float getClicksPerSecondForFlow(const float flow, const float pressure);
 void setPumpFlow(const float targetFlow, const float pressureRestriction, const SensorState &currentState);
 
 void resetController();
+void setControllerParams(float *kp, float *ki, float *kd);
+void getControllerParams(float *kp, float *ki, float *kd);
 #endif

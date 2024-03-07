@@ -10,8 +10,8 @@
 PSM pump(zcPin, dimmerPin, PUMP_RANGE, ZC_MODE, 1, 6);
 PIDController controller(
   0.8f, 
-  0.01f,
-  0.05f
+  0.02f,
+  0.1f
 );
 
 
@@ -54,6 +54,7 @@ inline float getPumpPct(const float targetPressure, const float flowRestriction,
     LOG_DEBUG("resistance: %f", resistance);
     uint32_t currentMillis = millis();
     uint32_t delta_t = currentMillis - currentState.lastPumpCalcTime;
+    LOG_DEBUG("delta t: %l", delta_t);
     float control_output = controller.calculate(targetPressure, currentState.smoothedPressure, delta_t / 1000.f);
     LOG_DEBUG("control output: %f", control_output);
     float targetFlow = fmaxf(currentState.smoothedPumpFlow + control_output, 0);
@@ -176,4 +177,22 @@ void setPumpFlow(const float targetFlow, const float pressureRestriction, const 
 
 void resetController() {
  controller.reset(); 
+}
+
+void setControllerParams(float *kp, float *ki, float *kd)
+{
+  if (kp != NULL) {
+    controller.setKp(*kp);
+  }
+  if (ki != NULL) {
+    controller.setKi(*ki);
+  }
+  if (kd != NULL) {
+    controller.setKd(*kd);
+  }
+}
+
+void getControllerParams(float *kp, float *ki, float *kd)
+{
+  controller.getParams(kp, ki, kd);
 }

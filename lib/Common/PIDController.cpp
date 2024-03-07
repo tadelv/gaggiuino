@@ -30,3 +30,25 @@ void PIDController::reset() {
   prev_error_ = 0;
   integral_ = 0;
 }
+
+void PIDController::setKp(float kp)
+{
+  kp_ = kp;
+}
+
+void PIDController::setKi(float ki)
+{
+  ki_ = ki;
+}
+
+void PIDController::setKd(float kd)
+{
+  kd_ = kd;
+}
+
+void PIDController::getParams(float *kp, float *ki, float *kd)
+{
+  *kp = kp_;
+  *ki = ki_;
+  *kd = kd_;
+}
