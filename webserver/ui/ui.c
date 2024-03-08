@@ -14,6 +14,10 @@ void ui_Screen1_screen_init(void);
 lv_obj_t *ui_Screen1;
 lv_obj_t *ui_TabView1;
 lv_obj_t *ui_TabPage1;
+lv_obj_t *ui_Container1;
+void ui_event_flushButton( lv_event_t * e);
+lv_obj_t *ui_flushButton;
+lv_obj_t *ui_Label1;
 lv_obj_t *ui_TabPage2;
 lv_obj_t *ui_TabPage3;
 lv_obj_t *ui____initial_actions0;
@@ -29,6 +33,12 @@ lv_obj_t *ui____initial_actions0;
 ///////////////////// ANIMATIONS ////////////////////
 
 ///////////////////// FUNCTIONS ////////////////////
+void ui_event_flushButton( lv_event_t * e) {
+    lv_event_code_t event_code = lv_event_get_code(e);lv_obj_t * target = lv_event_get_target(e);
+if ( event_code == LV_EVENT_CLICKED) {
+      sendFlushAction( e );
+}
+}
 
 ///////////////////// SCREENS ////////////////////
 

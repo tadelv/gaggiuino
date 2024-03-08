@@ -19,9 +19,31 @@ lv_obj_clear_flag( ui_TabView1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 
 ui_TabPage1 = lv_tabview_add_tab(ui_TabView1, "Home");
 
+ui_Container1 = lv_obj_create(ui_TabPage1);
+lv_obj_remove_style_all(ui_Container1);
+lv_obj_set_width( ui_Container1, 100);
+lv_obj_set_height( ui_Container1, 180);
+lv_obj_set_x( ui_Container1, -10 );
+lv_obj_set_y( ui_Container1, 0 );
+lv_obj_set_align( ui_Container1, LV_ALIGN_LEFT_MID );
+lv_obj_clear_flag( ui_Container1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+
+ui_flushButton = lv_btn_create(ui_Container1);
+lv_obj_set_width( ui_flushButton, 92);
+lv_obj_set_height( ui_flushButton, 50);
+lv_obj_add_flag( ui_flushButton, LV_OBJ_FLAG_SCROLL_ON_FOCUS );   /// Flags
+lv_obj_clear_flag( ui_flushButton, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+
+ui_Label1 = lv_label_create(ui_flushButton);
+lv_obj_set_width( ui_Label1, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label1, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_Label1, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label1,"FLUSH");
+
 ui_TabPage2 = lv_tabview_add_tab(ui_TabView1, "Profiles");
 
 ui_TabPage3 = lv_tabview_add_tab(ui_TabView1, "Settings");
 
+lv_obj_add_event_cb(ui_flushButton, ui_event_flushButton, LV_EVENT_ALL, NULL);
 
 }

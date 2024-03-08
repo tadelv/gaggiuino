@@ -47,3 +47,9 @@ void onShotSnapshotReceived(ShotSnapshot& shotData) {
 void onScalesTareReceived() {
   // bleScalesTare();
 }
+
+void sendFlushAction(lv_event_t *e)
+{
+  // handleFlushButton();
+  log_i("handle flush");
+}
