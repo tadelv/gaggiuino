@@ -150,8 +150,8 @@ void flushDeactivated(void) {
 }
 
 void flushPhases(void) {
-  static long timer = millis();
-  static int phaseDuration = 7000;
+  static uint32_t timer = millis();
+  static uint32_t phaseDuration = 7000;
   if (flushCounter > 10) {
     flushDeactivated();
     timer = millis();
@@ -159,20 +159,16 @@ void flushPhases(void) {
   }
   switch (flushCounter % 2) {
     case 1:
-      if (millis() - timer >= phaseDuration) {
-        flushCounter++;
-        timer = millis();
-      }
       openValve();
       setPumpFullOn();
       break;
     case 0:
-      if (millis() - timer >= phaseDuration) {
-        flushCounter++;
-        timer = millis();
-      }
       closeValve();
       setPumpOff();
       break;
+  }
+  if (millis() - timer >= phaseDuration) {
+    flushCounter++;
+    timer = millis();
   }
 }

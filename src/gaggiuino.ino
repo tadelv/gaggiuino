@@ -27,8 +27,64 @@ SystemState systemState;
 LED led;
 TOF tof;
 
-void setup(void) {
+
+void printPumpParamsData()
+{
+#if defined(DEBUG_COMMS_ENABLED) //what?
+  float kp = 0, ki = 0, kd = 0;
+  getControllerParams(&kp, &ki, &kd);
+  LOG_INFO("kp: %f, ki: %f, kd: %f", kp, ki, kd);
+#endif
+}
+#if defined(DEBUG_COMMS_ENABLED)
+void setPumpParams(float kp, float ki, float kd)
+{
+  setControllerParams(&kp, &ki, &kd);
+  float kp1 = 0, ki1 = 0, kd1 = 0;
+  getControllerParams(&kp1, &ki1, &kd1);
+  LOG_INFO("params set: kp: %f, ki: %f, kd: %f", kp, ki, kd);
+}
+
+void printState()
+{
+  LOG_INFO("Field values:\n");
+  LOG_INFO("brewSwitchState: %d\n", currentState.brewSwitchState);
+  LOG_INFO("steamSwitchState: %d\n", currentState.steamSwitchState);
+  LOG_INFO("hotWaterSwitchState: %d\n", currentState.hotWaterSwitchState);
+  LOG_INFO("isSteamForgottenON: %d\n", currentState.isSteamForgottenON);
+  LOG_INFO("scalesPresent: %d\n", currentState.scalesPresent);
+  LOG_INFO("tarePending: %d\n", currentState.tarePending);
+  LOG_INFO("temperature: %.2f °C\n", currentState.temperature);
+  LOG_INFO("waterTemperature: %.2f °C\n", currentState.waterTemperature);
+  LOG_INFO("pressure: %.2f bar\n", currentState.pressure);
+  LOG_INFO("pressureChangeSpeed: %.2f bar/s\n", currentState.pressureChangeSpeed);
+  LOG_INFO("pumpFlow: %.2f ml/s\n", currentState.pumpFlow);
+  LOG_INFO("pumpFlowChangeSpeed: %.2f ml/s^2\n", currentState.pumpFlowChangeSpeed);
+  LOG_INFO("waterPumped: %.2f\n", currentState.waterPumped);
+  LOG_INFO("weightFlow: %.2f\n", currentState.weightFlow);
+  LOG_INFO("weight: %.2f\n", currentState.weight);
+  LOG_INFO("shotWeight: %.2f\n", currentState.shotWeight);
+  LOG_INFO("smoothedPressure: %.2f\n", currentState.smoothedPressure);
+  LOG_INFO("smoothedPumpFlow: %.2f\n", currentState.smoothedPumpFlow);
+  LOG_INFO("smoothedWeightFlow: %.2f\n", currentState.smoothedWeightFlow);
+  LOG_INFO("consideredFlow: %.2f\n", currentState.consideredFlow);
+  LOG_INFO("pumpClicks: %ld\n", currentState.pumpClicks);
+  LOG_INFO("waterLvl: %u\n", currentState.waterLvl);
+  LOG_INFO("tofReady: %d\n", currentState.tofReady);
+  LOG_INFO("lastPumpCalcTime: %u\n", currentState.lastPumpCalcTime);
+}
+#endif
+
+void setup(void)
+{
   LOG_INIT();
+  #if defined(DEBUG_COMMS_ENABLED)
+  debugInit();
+  extern debug_callbacks_t debug_callbacks;
+  debug_callbacks.pumpControllerData = printPumpParamsData;
+  debug_callbacks.pumpControllerSet = setPumpParams;
+  debug_callbacks.systemStatus = printState;
+  #endif
   LOG_INFO("Gaggiuino (fw: %s) booting", AUTO_VERSION);
 
   // Various pins operation mode handling
@@ -107,6 +163,9 @@ void setup(void) {
 
 //Main loop where all the logic is continuously run
 void loop(void) {
+#if defined(DEBUG_COMMS_ENABLED)
+  readDebugCommand();
+#endif
   fillBoiler();
   if (lcdCurrentPageId != lcdLastCurrentPageId) pageValuesRefresh();
   lcdListen();
@@ -295,6 +354,7 @@ static void modeSelect(void) {
       else {
         profiling();
         steamTime = millis();
+        currentState.lastPumpCalcTime = steamTime;
       }
       break;
     case OPERATION_MODES::OPMODE_manual:
@@ -690,6 +750,12 @@ void onProfileReceived(Profile& newProfile) {
 }
 
 static void profiling(void) {
+
+  Defer defer([]() {
+    // Keep that water at temp
+    justDoCoffee(runningCfg, currentState, brewActive);
+  });
+
   if (brewActive) { //runs this only when brew button activated and pressure profile selected
     uint32_t timeInShot = millis() - brewingTimer;
     phaseProfiler.updatePhase(timeInShot, currentState);
@@ -716,8 +782,6 @@ static void profiling(void) {
     setPumpOff();
     closeValve();
   }
-  // Keep that water at temp
-  justDoCoffee(runningCfg, currentState, brewActive);
 }
 
 static void manualFlowControl(void) {
@@ -769,6 +833,7 @@ static void brewParamsReset(void) {
   currentState.pumpFlow    = 0.f;
   currentState.weight      = 0.f;
   currentState.waterPumped = 0.f;
+  currentState.lastPumpCalcTime = millis();
   brewingTimer             = millis();
   flowTimer                = brewingTimer;
   systemHealthTimer        = brewingTimer + HEALTHCHECK_EVERY;
@@ -776,6 +841,7 @@ static void brewParamsReset(void) {
   weightMeasurements.clear();
   predictiveWeight.reset();
   phaseProfiler.reset();
+  resetController();
 }
 
 static bool sysReadinessCheck(void) {
