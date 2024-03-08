@@ -43,4 +43,35 @@
   #define LOG_DEBUG(msg, ...)
 #endif
 
+#ifdef UNIT_TEST
+#define LOG_ERROR(msg, ...)     \
+    do                            \
+    {                             \
+      printf("E ");                \
+      printf(msg, ##__VA_ARGS__); \
+      printf("\n");               \
+    } while (0)
+#define LOG_INFO(msg, ...)      \
+    do                            \
+    {                             \
+      printf("I ");                \
+      printf(msg, ##__VA_ARGS__); \
+      printf("\n");               \
+    } while (0)
+#define LOG_VERBOSE(msg, ...)   \
+    do                            \
+    {                             \
+      printf("V ");                \
+      printf(msg, ##__VA_ARGS__); \
+      printf("\n");               \
+    } while (0)
+#define LOG_DEBUG(msg, ...)     \
+    do                            \
+    {                             \
+      printf("D ");                \
+      printf(msg, ##__VA_ARGS__); \
+      printf("\n");               \
+    } while (0)
+#endif
+
 #endif

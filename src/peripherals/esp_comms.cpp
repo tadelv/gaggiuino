@@ -51,7 +51,7 @@ void espCommsSendSensorData(const SensorState& state, uint32_t frequency) {
   }
 }
 
-volatile uint32_t shotDataTimer;
+volatile uint32_t shotDataTimer = 0;
 void espCommsSendShotData(ShotSnapshot& shotData, uint32_t frequency) {
   uint32_t now = millis();
   if (now - shotDataTimer > frequency) {
