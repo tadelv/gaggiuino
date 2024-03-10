@@ -45,6 +45,7 @@ extern lv_obj_t *ui_TabPage3;
 void ui_BrewingScreen_screen_init(void);
 void ui_event_BrewingScreen( lv_event_t * e);
 extern lv_obj_t *ui_BrewingScreen;
+extern lv_obj_t *ui_BrewGraphBack;
 extern lv_obj_t *ui_BrewGraph;
 void ui_event_Button2( lv_event_t * e);
 extern lv_obj_t *ui_Button2;

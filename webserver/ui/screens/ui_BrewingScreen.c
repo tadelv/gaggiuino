@@ -12,6 +12,32 @@ lv_obj_clear_flag( ui_BrewingScreen, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 ui_object_set_themeable_style_property(ui_BrewingScreen, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Background);
 ui_object_set_themeable_style_property(ui_BrewingScreen, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Background);
 
+ui_BrewGraphBack = lv_chart_create(ui_BrewingScreen);
+lv_obj_set_width( ui_BrewGraphBack, 320);
+lv_obj_set_height( ui_BrewGraphBack, 200);
+lv_chart_set_type( ui_BrewGraphBack, LV_CHART_TYPE_LINE);
+lv_chart_set_point_count( ui_BrewGraphBack, 360);
+lv_chart_set_range( ui_BrewGraphBack, LV_CHART_AXIS_PRIMARY_Y, 0, 10);
+lv_chart_set_div_line_count( ui_BrewGraphBack, 11, 10);
+lv_chart_set_axis_tick( ui_BrewGraphBack, LV_CHART_AXIS_PRIMARY_X, 100, 5, 10, 2, false, 50);
+lv_chart_set_axis_tick( ui_BrewGraphBack, LV_CHART_AXIS_PRIMARY_Y, -20, -10, 6, 5, true, 50);
+lv_chart_set_axis_tick( ui_BrewGraphBack, LV_CHART_AXIS_SECONDARY_Y, -30, -10, 5, 10, true, 25);
+ui_object_set_themeable_style_property(ui_BrewGraphBack, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Background);
+ui_object_set_themeable_style_property(ui_BrewGraphBack, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Background);
+lv_obj_set_style_border_color(ui_BrewGraphBack, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_border_opa(ui_BrewGraphBack, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_line_color(ui_BrewGraphBack, lv_color_hex(0x404076), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_line_opa(ui_BrewGraphBack, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+
+lv_obj_set_style_size(ui_BrewGraphBack, 0, LV_PART_INDICATOR| LV_STATE_DEFAULT);
+
+lv_obj_set_style_line_color(ui_BrewGraphBack, lv_color_hex(0x767676), LV_PART_TICKS | LV_STATE_DEFAULT );
+lv_obj_set_style_line_opa(ui_BrewGraphBack, 0, LV_PART_TICKS| LV_STATE_DEFAULT);
+lv_obj_set_style_text_color(ui_BrewGraphBack, lv_color_hex(0x00FF94), LV_PART_TICKS | LV_STATE_DEFAULT );
+lv_obj_set_style_text_opa(ui_BrewGraphBack, 255, LV_PART_TICKS| LV_STATE_DEFAULT);
+lv_obj_set_style_text_align(ui_BrewGraphBack, LV_TEXT_ALIGN_AUTO, LV_PART_TICKS| LV_STATE_DEFAULT);
+
 ui_BrewGraph = lv_chart_create(ui_BrewingScreen);
 lv_obj_set_width( ui_BrewGraph, 320);
 lv_obj_set_height( ui_BrewGraph, 200);
@@ -20,20 +46,16 @@ lv_chart_set_point_count( ui_BrewGraph, 360);
 lv_chart_set_range( ui_BrewGraph, LV_CHART_AXIS_SECONDARY_Y, 0, 1000);
 lv_chart_set_div_line_count( ui_BrewGraph, 11, 10);
 lv_chart_set_axis_tick( ui_BrewGraph, LV_CHART_AXIS_PRIMARY_X, 100, 5, 10, 2, false, 50);
-lv_chart_set_axis_tick( ui_BrewGraph, LV_CHART_AXIS_PRIMARY_Y, -20, -10, 6, 5, true, 50);
-lv_chart_set_axis_tick( ui_BrewGraph, LV_CHART_AXIS_SECONDARY_Y, -30, -10, 5, 10, true, 25);
-lv_chart_series_t* ui_BrewGraph_series_1 = lv_chart_add_series(ui_BrewGraph, lv_color_hex(0xA52A2A), LV_CHART_AXIS_SECONDARY_Y);
-static lv_coord_t ui_BrewGraph_series_1_array[] = { 0,10,20,40,80,80,40,20,10,0 };
-lv_chart_set_ext_y_array(ui_BrewGraph, ui_BrewGraph_series_1, ui_BrewGraph_series_1_array);
-lv_chart_series_t* ui_BrewGraph_series_2 = lv_chart_add_series(ui_BrewGraph, lv_color_hex(0x808080), LV_CHART_AXIS_SECONDARY_Y);
-static lv_coord_t ui_BrewGraph_series_2_array[] = { 10,22,45,59,72,84,95,62,33,44 };
-lv_chart_set_ext_y_array(ui_BrewGraph, ui_BrewGraph_series_2, ui_BrewGraph_series_2_array);
-ui_object_set_themeable_style_property(ui_BrewGraph, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_COLOR, _ui_theme_color_Background);
-ui_object_set_themeable_style_property(ui_BrewGraph, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Background);
+lv_chart_set_axis_tick( ui_BrewGraph, LV_CHART_AXIS_PRIMARY_Y, -20, -10, 6, 5, false, 50);
+lv_chart_set_axis_tick( ui_BrewGraph, LV_CHART_AXIS_SECONDARY_Y, -30, -10, 5, 10, false, 25);
+lv_obj_set_style_bg_color(ui_BrewGraph, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_BrewGraph, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_border_color(ui_BrewGraph, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_border_opa(ui_BrewGraph, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_border_opa(ui_BrewGraph, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_outline_color(ui_BrewGraph, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_outline_opa(ui_BrewGraph, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_line_color(ui_BrewGraph, lv_color_hex(0x404076), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_line_opa(ui_BrewGraph, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_line_opa(ui_BrewGraph, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
 
 
 lv_obj_set_style_size(ui_BrewGraph, 0, LV_PART_INDICATOR| LV_STATE_DEFAULT);
