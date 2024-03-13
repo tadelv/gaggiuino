@@ -7,6 +7,7 @@ void stmCommsInit(HardwareSerial& serial);
 void stmCommsReadData();
 void stmCommsSendWeight(float weight);
 void stmCommsSendScaleDisconnected();
+void stmCommsSendProfile(const Profile &profile);
 
 // To be defined elsewhere
 void onSensorStateSnapshotReceived(SensorStateSnapshot& snapshot);

@@ -47,3 +47,11 @@ void stmCommsSendScaleDisconnected() {
   mcuComms.sendRemoteScalesDisconnected();
   xSemaphoreGiveRecursive(mcucLock);
 }
+
+void stmCommsSendProfile(Profile &profile)
+{
+  if (xSemaphoreTakeRecursive(mcucLock, portMAX_DELAY) == pdFALSE)
+    return;
+    mcuComms.sendProfile(profile);
+    xSemaphoreGiveRecursive(mcucLock);
+}
