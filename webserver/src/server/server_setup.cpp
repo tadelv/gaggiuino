@@ -2,6 +2,7 @@
 #include "ESPAsyncWebServer.h"
 #include "AsyncTCP.h"
 
+#include "api/api_profiles.h"
 #include "api/api_wifi.h"
 #include "api/api_static_files.h"
 #include "api/api_not_found_handler.h"
@@ -17,6 +18,7 @@ namespace webserver {
 void webServerTask(void* params);
 
 void webServerSetup() {
+  setupProfilesApi(webserver::server);
   setupWifiApi(webserver::server);
   setupWebSocket(webserver::server);
   setupStaticFiles(webserver::server);
