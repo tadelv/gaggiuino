@@ -1,9 +1,10 @@
 #include "filesystem.h"
 #include <LittleFS.h>
 #include "../log/log.h"
+#include "mcu_comms.h"
 
 // -----------------------------------------
-// --------- Initialize SPIFFS -------------
+// -------- Initialize LittleFS ------------
 // -----------------------------------------
 void initFS() {
   if (!LittleFS.begin(true)) {
@@ -215,7 +216,8 @@ void listFS()
 
 void writeFileBinary(fs::FS &fs, const char *path, const uint8_t *data, const uint8_t len) 
 {
-  File file = fs.open(path, FILE_WRITE);
+  LOG_DEBUG("writing to: %s - size: %u", path, len);
+  File file = fs.open(path, "wb");
   if (!file)
   {
     LOG_INFO("%s - failed to open file for writing", path);
@@ -232,36 +234,90 @@ void writeFileBinary(fs::FS &fs, const char *path, const uint8_t *data, const ui
   file.close();
 }
 
+uint8_t *readFileBinary(fs::FS &fs, const char *path)
+{
+  LOG_DEBUG("opening %s", path);
+  File file = fs.open(path, "rb");
+  if (!file || file.size() == 0) {
+    LOG_INFO("Could not open: %s", path);
+    return NULL;
+  }
+
+  size_t size = file.size();
+  LOG_DEBUG("allocating: %u", size);
+
+  uint8_t *data = (uint8_t *)malloc(size);
+  if (data == NULL) {
+    LOG_INFO("Could not allocate memory");
+    return NULL;
+  }
+  file.read(data, size);
+  LOG_DEBUG("data read");
+  return data;
+}
+
 void fsSaveProfile(NamedProfile &profile)
 {
   char filename[50] = "/profiles/";
   strncat(filename, profile.name, 39);
-  size_t structSize = sizeof(NamedProfile);
-
-  // Allocate memory for the serialized data
-  uint8_t *serializedData = (uint8_t *)malloc(structSize);
-  if (serializedData == NULL)
-  {
-    LOG_INFO("Memory allocation failed.");
-    return;
-  }
-
-  // // Copy the struct to the serialized data buffer
-  memcpy(serializedData, &profile.profile, structSize);
-  writeFileBinary(LittleFS, filename, serializedData, structSize);
+  ProfileSerializer serializer;
+  std::vector<uint8_t> data = serializer.serializeProfile(profile.profile);
+  LOG_DEBUG("serialized size: %u", data.size());
+  writeFileBinary(LittleFS, filename, data.data(), data.size());
 }
 
 uint8_t fsProfilesCount()
 {
+  File profilesDir = LittleFS.open("/profiles");
+  File profile = profilesDir.openNextFile();
+  uint8_t count = 0;
 
+  while (profile)
+  {
+    count++;
+    profile = profilesDir.openNextFile();
+  }
+  return count;
 }
 
-void fsGetProfiles(NamedProfile profiles[]) 
+std::vector<NamedProfile> fsGetProfiles() 
 {
+  uint8_t count = fsProfilesCount();
+  std::vector<NamedProfile> profiles = std::vector<NamedProfile>();
+  if (count < 1) {
+    return profiles;
+  }
+  File profilesDir = LittleFS.open("/profiles");
+  File profile = profilesDir.openNextFile();
 
+  ProfileSerializer serializer;
+
+  while (profile)
+  {
+    uint8_t *data = readFileBinary(LittleFS, profile.path());
+    if (data == NULL) {
+      profile = profilesDir.openNextFile();
+      continue;
+    }
+    std::vector<uint8_t> dataVector(data, data + sizeof(data));
+
+    Profile profileData;
+    serializer.deserializeProfile(dataVector, profileData);
+    LOG_DEBUG("deser: %u", profileData.phaseCount());
+    free(data);
+    NamedProfile profileEntry;
+    LOG_DEBUG("got name: %s", profile.name());
+    strncpy(profileEntry.name, profile.name(), 38);
+    profileEntry.profile = profileData;
+    profiles.push_back(profileEntry);
+    profile = profilesDir.openNextFile();
+  }
+  return profiles;
 }
 
 void fsDeleteProfile(const char *name) 
 {
-
+  char filename[50] = "/profiles/";
+  strncat(filename, name, 39);
+  deleteFile(LittleFS, filename);
 }

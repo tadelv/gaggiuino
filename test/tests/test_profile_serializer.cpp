@@ -15,10 +15,12 @@ void test_profile_serializer_works_correctly(void) {
 
   std::vector<uint8_t> serializedProfile = serializer.serializeProfile(profile);
 
+  TEST_ASSERT_GREATER_OR_EQUAL_MESSAGE(240, serializedProfile.size(), "bruv do you even serialize?");
+  TEST_ASSERT_EQUAL(3, profile.phaseCount());
   Profile deserializedProfile;
   serializer.deserializeProfile(serializedProfile, deserializedProfile);
-
   TEST_ASSERT_EQUAL_PROFILE(profile, deserializedProfile);
+  TEST_ASSERT_EQUAL(3, deserializedProfile.phaseCount());
 }
 
 void runAllProfileSerializerTests(void) {

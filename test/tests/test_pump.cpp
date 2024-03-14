@@ -51,7 +51,6 @@ void test_pump_pct_for_pressure(void) {
   testState.smoothedPressure = 2.f;
   testState.smoothedPumpFlow = getPumpFlow(getClicksPerSecondForFlow(2.f, 2.f), 2.f);
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState), -1);
-  // TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState, false), -1);
   resetController();
 
   // test pressure target is lower than current
@@ -60,7 +59,6 @@ void test_pump_pct_for_pressure(void) {
   testState.smoothedPressure = 9.f;
   testState.smoothedPumpFlow = getPumpFlow(maxPumpClicksPerSecond, 9);
   // TODO: figure out the slope
-  printf("ref pct: %f\n", getPumpPct(6.f, 0.f, testState, false));
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(0, getPumpPct(6.f, 0.f, testState), -1);
   resetController();
 
@@ -70,7 +68,6 @@ void test_pump_pct_for_pressure(void) {
   testState.smoothedPressure = 2.f;
   testState.smoothedPumpFlow = getPumpFlow(getClicksPerSecondForFlow(2.f, 2.f), 2.f);
   // TODO: figure out the slope
-  printf("ref pct: %f\n", getPumpPct(3.f, 0.f, testState, false));
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(3.f, 0.f, testState), -1);
   resetController();
 
@@ -80,7 +77,6 @@ void test_pump_pct_for_pressure(void) {
   testState.smoothedPressure = 2.f;
   testState.smoothedPumpFlow = getPumpFlow(getClicksPerSecondForFlow(2.f, 2.f), 2.f);
   // TODO: figure out the slope
-  printf("ref pct: %f\n", getPumpPct(6.f, 0.f, testState, false));
   TEST_ASSERT_EQUAL_FLOAT_ACCURACY(1, getPumpPct(6.f, 0.f, testState), 0);
   resetController();
 

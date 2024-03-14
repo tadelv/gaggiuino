@@ -17,6 +17,11 @@ void setup() {
   wifiSetup();
   webServerSetup();
   UI::init();
+  auto profiles = fsGetProfiles();
+  for (NamedProfile pr : profiles)
+  {
+    LOG_INFO("have: %s, phases: %u", pr.name, pr.profile.phaseCount());
+  }
 }
 
 void loop() {

@@ -5,7 +5,7 @@
 
 typedef struct NamedProfile_t {
   Profile profile;
-  char *name;
+  char name[39];
 } NamedProfile;
 
 void initFS();
@@ -13,7 +13,7 @@ void listFS();
 
 void fsSaveProfile(NamedProfile &profile);
 uint8_t fsProfilesCount();
-void fsGetProfiles(NamedProfile profiles[]);
+std::vector<NamedProfile> fsGetProfiles();
 void fsDeleteProfile(const char *name);
 
 #endif

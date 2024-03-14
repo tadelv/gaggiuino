@@ -9,14 +9,14 @@ size_t ProfileSerializer::neededBufferSize(Profile& profile) const {
 }
 
 vector<uint8_t> ProfileSerializer::serializeProfile(Profile& profile) const {
-  vector<uint8_t> buffer;
-  buffer.reserve(neededBufferSize(profile));
+  size_t neededSize = neededBufferSize(profile);
+  vector<uint8_t> buffer(neededSize);
+
   size_t phaseCount = profile.phaseCount();
 
   memcpy(buffer.data(), &phaseCount, sizeof(phaseCount));
   memcpy(buffer.data() + sizeof(phaseCount), profile.phases.data(), phaseCount * sizeof(Phase));
   memcpy(buffer.data() + sizeof(phaseCount) + phaseCount * sizeof(Phase), &profile.globalStopConditions, sizeof(profile.globalStopConditions));
-
   return buffer;
 }
 
@@ -24,7 +24,7 @@ void ProfileSerializer::deserializeProfile(vector<uint8_t>& buffer, Profile& pro
   size_t phaseCount;
   memcpy(&phaseCount, buffer.data(), sizeof(profile.phaseCount()));
   profile.phases.clear();
-  profile.phases.reserve(phaseCount);
+  profile.phases.resize(phaseCount);
   memcpy(profile.phases.data(), buffer.data() + sizeof(profile.phaseCount()), phaseCount * sizeof(Phase));
   memcpy(&profile.globalStopConditions, buffer.data() + sizeof(profile.phaseCount()) + phaseCount * sizeof(Phase), sizeof(profile.globalStopConditions));
 }
