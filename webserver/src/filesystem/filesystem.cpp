@@ -190,34 +190,17 @@ void listFS()
   LOG_INFO("used: %fkB\n", used / (float)1024);
   LOG_INFO("disk usage: %f%%\n", used / (float)total);
   File f = LittleFS.open("/");
-  String filename;
-  do {
-    filename = f.getNextFileName();
+  String filename = f.getNextFileName();
+  while (filename != "") {
     LOG_INFO("found: %s", filename.c_str());
-  } while (filename != "");
-
-  // if (LittleFS.mkdir("/profiles")) {
-  //   LOG_INFO("created profiles dir\n");
-  // }
-
-  // File newF = LittleFS.open("/profiles/italian", FILE_WRITE, true);
-  // uint8_t buf[9] = "krompir\0";
-  // newF.write(
-  //   buf, 9
-  // );
-
-  File file2 = LittleFS.open("/profiles/italian");
-  char newBuf[12];
-  file2.readBytes(newBuf, file2.available());
-  LOG_INFO("read file: %s", newBuf);
-  listDir(LittleFS, "/", 2);
-  // readFile(LittleFS, "/profiles/italian");
+    filename = f.getNextFileName();
+  }
 }
 
-void writeFileBinary(fs::FS &fs, const char *path, const uint8_t *data, const uint8_t len) 
+void writeFileBinary(fs::FS &fs, const char *path, const uint8_t *data, const size_t len) 
 {
   LOG_DEBUG("writing to: %s - size: %u", path, len);
-  File file = fs.open(path, "wb");
+  File file = fs.open(path, FILE_WRITE);
   if (!file)
   {
     LOG_INFO("%s - failed to open file for writing", path);
@@ -234,13 +217,13 @@ void writeFileBinary(fs::FS &fs, const char *path, const uint8_t *data, const ui
   file.close();
 }
 
-uint8_t *readFileBinary(fs::FS &fs, const char *path)
+std::vector<uint8_t> readFileBinary(fs::FS &fs, const char *path)
 {
   LOG_DEBUG("opening %s", path);
-  File file = fs.open(path, "rb");
+  File file = fs.open(path, FILE_READ);
   if (!file || file.size() == 0) {
     LOG_INFO("Could not open: %s", path);
-    return NULL;
+    return std::vector<uint8_t>();
   }
 
   size_t size = file.size();
@@ -249,17 +232,20 @@ uint8_t *readFileBinary(fs::FS &fs, const char *path)
   uint8_t *data = (uint8_t *)malloc(size);
   if (data == NULL) {
     LOG_INFO("Could not allocate memory");
-    return NULL;
+    return std::vector<uint8_t>();
   }
   file.read(data, size);
-  LOG_DEBUG("data read");
-  return data;
+
+  std::vector<uint8_t> buffer(data, data+file.size());
+  free(data);
+  return buffer;
 }
 
 void fsSaveProfile(NamedProfile &profile)
 {
   char filename[50] = "/profiles/";
   strncat(filename, profile.name, 39);
+  LOG_DEBUG("saving %s", profile.name);
   ProfileSerializer serializer;
   std::vector<uint8_t> data = serializer.serializeProfile(profile.profile);
   LOG_DEBUG("serialized size: %u", data.size());
@@ -294,19 +280,15 @@ std::vector<NamedProfile> fsGetProfiles()
 
   while (profile)
   {
-    uint8_t *data = readFileBinary(LittleFS, profile.path());
-    if (data == NULL) {
+    std::vector<uint8_t> dataVector = readFileBinary(LittleFS, profile.path());
+    if (dataVector.size() == 0) {
       profile = profilesDir.openNextFile();
       continue;
     }
-    std::vector<uint8_t> dataVector(data, data + sizeof(data));
-
     Profile profileData;
     serializer.deserializeProfile(dataVector, profileData);
-    LOG_DEBUG("deser: %u", profileData.phaseCount());
-    free(data);
+
     NamedProfile profileEntry;
-    LOG_DEBUG("got name: %s", profile.name());
     strncpy(profileEntry.name, profile.name(), 38);
     profileEntry.profile = profileData;
     profiles.push_back(profileEntry);
