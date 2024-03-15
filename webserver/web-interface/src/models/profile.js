@@ -143,3 +143,14 @@ export class Profile {
     );
   }
 }
+
+export class NamedProfile {
+  constructor(name, profile) {
+    this.name = name;
+    this.profile = profile;
+  }
+
+  static parse(obj) {
+    return new NamedProfile(obj.name, Profile.parse(obj.profile));
+  }
+}

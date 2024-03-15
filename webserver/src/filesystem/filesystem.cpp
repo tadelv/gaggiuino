@@ -195,6 +195,7 @@ void listFS()
     LOG_INFO("found: %s", filename.c_str());
     filename = f.getNextFileName();
   }
+  createDir(LittleFS, "/profiles");
 }
 
 void writeFileBinary(fs::FS &fs, const char *path, const uint8_t *data, const size_t len) 

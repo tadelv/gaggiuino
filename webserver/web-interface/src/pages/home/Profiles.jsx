@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Card, Container, useTheme, Typography, CardContent, CardActions, Paper, TextareaAutosize, Alert,
 } from '@mui/material';
@@ -14,20 +14,53 @@ import Select from '@mui/material/Select';
 // import InputAdornment from '@mui/material/InputAdornment';
 import Grid from '@mui/material/Grid';
 import ProfileChart from '../../components/chart/ProfileChart';
-import { Profile } from '../../models/profile';
+import { Profile, NamedProfile } from '../../models/profile';
+import axios from 'axios';
+import { DataGrid } from '@mui/x-data-grid';
+import DataTable from '../../components/table/table';
+
+const columns = [
+  // { field: 'id', headerName: 'ID' },
+  { field: 'name', headerName: 'Name'},
+];
+
 
 export default function Profiles() {
   const theme = useTheme();
 
   const [elements, setElements] = useState([
-    { id: 1, type: 'select', value: '' },
-    { id: 2, type: 'select', value: '' },
+    { id: 1, type: 'select', value: '1' },
+    { id: 2, type: 'select', value: '2' },
     { id: 3, type: 'text', value: '' },
     { id: 4, type: 'text', value: '' },
     { id: 5, type: 'text', value: '' },
     { id: 6, type: 'text', value: '' },
   ]);
   const [nextId, setNextId] = useState(7);
+  
+  const [profiles, setProfiles] = useState(
+    [new NamedProfile([])]
+  );
+
+  const profileRows = useMemo(
+    () => profiles.map((profile, index) => ({id: index, name: profile.name})),
+    [profiles]
+  )
+
+  async function getProfiles() {
+    return axios.get('/api/profiles/list')
+      .then(({ data }) => data);
+  }
+
+  async function loadProfiles() {
+    const newProfiles = await getProfiles();
+    setProfiles(newProfiles);
+  }
+
+  useEffect(() => {
+    // Fetch objects from the server when the component mounts
+   loadProfiles();
+  }, []);
 
   const handleAddRow = () => {
     const newElements = [
@@ -65,7 +98,7 @@ export default function Profiles() {
 
   const handleRemoveAll = () => {
     setElements([
-      { id: 1, type: 'select', value: '' },
+      { id: 1, type: 'select', value: '1' },
       { id: 2, type: 'select', value: '' },
       { id: 3, type: 'text', value: '' },
       { id: 4, type: 'text', value: '' },
@@ -137,6 +170,7 @@ export default function Profiles() {
                             <Grid item xs={6} key={element.id}>
                               <Select
                                 value={element.value}
+                                defaultValue='Preinfusion'
                                 onChange={(event) => handleSelectChange(event, element.id)}
                               >
                                 <option value="1">Preinfusion</option>
@@ -188,6 +222,42 @@ export default function Profiles() {
               <ProfileChart profile={profile} />
             </Grid>
           </Grid>
+        </Paper>
+      </Container>
+      <Container>
+        <Paper sx={{ mt: theme.spacing(2), p: theme.spacing(2) }}>
+          {/* <Grid container spacing={2}>
+            {profiles.map((profile, index) => (
+              <li key={index} onClick={() => updateProfile(JSON.stringify(profile.profile))}>
+                {profile.name}
+                </li>
+            ))}
+          </Grid> */}
+          <div style={{ height: 300, width: '100%' }}>
+          <DataGrid
+            component={Typography}
+            rows={
+              profileRows
+            }
+            columns={columns}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
+              },
+            }}
+            pageSizeOptions={[]}
+            // checkboxSelection
+            disableRowSelectionOnClick
+            disableColumnSelector
+            onRowClick={
+              (params, event, details) => {
+                updateProfile(JSON.stringify(profiles[params.row.id].profile))
+              }
+            }
+          />
+          </div>
         </Paper>
       </Container>
     </div>

@@ -17,11 +17,25 @@ void setup() {
   wifiSetup();
   webServerSetup();
   UI::init();
+
+  listFS();
+  fsDeleteProfile("test");
   auto profiles = fsGetProfiles();
   for (NamedProfile pr : profiles)
   {
     LOG_INFO("have: %s, phases: %u", pr.name, pr.profile.phaseCount());
+    fsDeleteProfile(pr.name);
   }
+
+  Profile profile;
+  profile.phases.push_back({PHASE_TYPE::PHASE_TYPE_PRESSURE, Transition(0.f, 10.f, TransitionCurve::EASE_IN_OUT, 1000), -1, PhaseStopConditions{.time = 1000}});
+  profile.phases.push_back({PHASE_TYPE::PHASE_TYPE_FLOW, Transition(10.f, 5.f, TransitionCurve::LINEAR), 2.f, PhaseStopConditions{.weight = 10.f}});
+  profile.phases.push_back({PHASE_TYPE::PHASE_TYPE_FLOW, Transition(10.f, 5.f, TransitionCurve::LINEAR), 3.f, PhaseStopConditions{.pressureAbove = 2.f}});
+
+  NamedProfile pr;
+  strcpy(pr.name, "test");
+  pr.profile = profile;
+  fsSaveProfile(pr);
 }
 
 void loop() {
