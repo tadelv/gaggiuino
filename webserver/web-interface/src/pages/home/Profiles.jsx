@@ -11,31 +11,43 @@ import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 // import InputAdornment from '@mui/material/InputAdornment';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Unstable_Grid2';
 import ProfileChart from '../../components/chart/ProfileChart';
-import { Profile, NamedProfile } from '../../models/profile';
+import { Profile, NamedProfile, GlobalStopConditions } from '../../models/profile';
 import axios from 'axios';
 import { DataGrid } from '@mui/x-data-grid';
-import DataTable from '../../components/table/table';
-
-const columns = [
-  // { field: 'id', headerName: 'ID' },
-  { field: 'name', headerName: 'Name'},
-];
+import { elements } from 'chart.js';
 
 
 export default function Profiles() {
   const theme = useTheme();
 
-  const [elements, setElements] = useState([
-    { id: 1, type: 'select', value: '1' },
-    { id: 2, type: 'select', value: '2' },
-    { id: 3, type: 'text', value: '' },
-    { id: 4, type: 'text', value: '' },
-    { id: 5, type: 'text', value: '' },
-    { id: 6, type: 'text', value: '' },
-  ]);
+  const defaultProfileValues = [
+    { id: 1, type: 'selectType', value: '0' },
+    { id: 2, type: 'targetStart', value: '' },
+    { id: 3, type: 'targetEnd', value: '' },
+    { id: 4, type: 'transitionType', value: '0' },
+    { id: 5, type: 'transitionTime', value: '' },
+    { id: 6, type: 'restriction', value: '' },
+  ]
+
+  const columns = [
+    // { field: 'id', headerName: 'ID' },
+    { field: 'name', headerName: 'Name' },
+  ];
+
+  const [globalStopConditions, setGlobalStopConditions] = useState(
+    { time: 0, weight: 0, totalWaterPumped: 0 }
+  )
+  const handleOnChangeGlobalStopConditions = event => {
+    const { name, value } = event.target;
+    console.log("setting " + name + "and " + value)
+    setGlobalStopConditions({ ...globalStopConditions, [name]: 0+value});
+  };
+
+  const [phases, setElements] = useState(defaultProfileValues);
   const [nextId, setNextId] = useState(7);
   
   const [profiles, setProfiles] = useState(
@@ -64,16 +76,12 @@ export default function Profiles() {
 
   const handleAddRow = () => {
     const newElements = [
-      ...elements,
-      { id: nextId, type: 'select', value: '' },
-      { id: nextId + 1, type: 'select', value: '' },
-      { id: nextId + 2, type: 'text', value: '' },
-      { id: nextId + 3, type: 'text', value: '' },
-      { id: nextId + 4, type: 'text', value: '' },
-      { id: nextId + 5, type: 'text', value: '' },
+      ...phases,
+      ...defaultProfileValues
     ];
     setElements(newElements);
     setNextId(nextId + 6);
+    console.log("after update: ", newElements)
   };
 
   const [error, setError] = useState(null);
@@ -89,7 +97,7 @@ export default function Profiles() {
   };
 
   const handleRemoveRow = () => {
-    const newElements = [...elements];
+    const newElements = [...phases];
     for (let i = 0; i < 6; i++) {
       newElements.pop();
     }
@@ -97,25 +105,19 @@ export default function Profiles() {
   };
 
   const handleRemoveAll = () => {
-    setElements([
-      { id: 1, type: 'select', value: '1' },
-      { id: 2, type: 'select', value: '' },
-      { id: 3, type: 'text', value: '' },
-      { id: 4, type: 'text', value: '' },
-      { id: 5, type: 'text', value: '' },
-      { id: 6, type: 'text', value: '' },
-    ]);
+    setElements(defaultProfileValues);
     setNextId(7);
   };
 
   const handleSelectChange = (event, id) => {
-    const updatedElements = elements.map((element) => {
+    const updatedElements = phases.map((element) => {
       if (element.id === id) {
         return { ...element, value: event.target.value };
       }
       return element;
     });
     setElements(updatedElements);
+    console.log("after update: ", JSON.stringify(updatedElements))
   };
 
   return (
@@ -164,32 +166,93 @@ export default function Profiles() {
                   </IconButton>
                   <div>
                     <Grid container spacing={2}>
-                      {elements.map((element) => {
-                        if (element.type === 'select') {
+                      <Grid container spacing={2}>
+                        <Grid item xs={4}>
+                      <TextField  label="Time(s)" value={globalStopConditions.time > 0 ? globalStopConditions.time : ""} onChange={(event) => {
+                        setGlobalStopConditions({ ...globalStopConditions, ['time']: event.target.value })
+                      }} />
+                        </Grid> 
+                        <Grid item xs={4}>
+                      <TextField label="Weight(g)" value={globalStopConditions.weight > 0 ? globalStopConditions.weight : ""} onChange={(event) => {
+                        setGlobalStopConditions({ ...globalStopConditions, ['weight']: event.target.value })
+                      }} />
+                        </Grid>
+                        <Grid item xs={4}>
+                      <TextField label="Total water(ml)" value={globalStopConditions.totalWaterPumped > 0 ? globalStopConditions.totalWaterPumped : ""} onChange={(event) => {
+                        setGlobalStopConditions({ ...globalStopConditions, ['totalWaterPumped']: event.target.value })
+                      }} />
+                        </Grid>
+                      </Grid>
+                      <Grid container xs={12} spacing={0}> 
+                      {phases.map((element) => {
+                        if (element.type === 'selectType') {
                           return (
-                            <Grid item xs={6} key={element.id}>
+                            <Grid item xs={2} key={element.id}>
                               <Select
                                 value={element.value}
                                 defaultValue='Preinfusion'
                                 onChange={(event) => handleSelectChange(event, element.id)}
+                                displayEmpty={false}
+                                label="Phase"
                               >
-                                <option value="1">Preinfusion</option>
-                                <option value="2">Soak</option>
-                                <option value="3">Flow</option>
-                                <option value="4">Pressure</option>
+                                <MenuItem value='0'>Flow</MenuItem>
+                                <MenuItem value="1">Pressure</MenuItem>
+                                {/* <MenuItem value="3">Flow</MenuItem>
+                                <MenuItem value="4">Pressure</MenuItem> */}
                               </Select>
                             </Grid>
                           );
                         }
-                        if (element.type === 'text') {
+                        if (element.type === 'targetStart') {
                           return (
-                            <Grid item xs={3} key={element.id}>
-                              <TextField value={element.value} />
+                            <Grid item xs={2} key={element.id}>
+                              <TextField value={element.value} label={'Target start'} onChange={(event) => handleSelectChange(event, element.id)}/>
+                            </Grid>
+                          );
+                        }
+                        if (element.type === 'targetEnd') {
+                          return (
+                            <Grid item xs={2} key={element.id}>
+                              <TextField value={element.value} label={'Target end'} onChange={(event) => handleSelectChange(event, element.id)} />
+                            </Grid>
+                          );
+                        }
+                        if (element.type === 'transitionTime') {
+                          return (
+                            <Grid item xs={2} key={element.id}>
+                              <TextField value={element.value} label={'Transition time'} onChange={(event) => handleSelectChange(event, element.id)} />
+                            </Grid>
+                          );
+                        }
+                        if (element.type === 'transitionType') {
+                          return (
+                            <Grid item xs={2} key={element.id}>
+                              <Select
+                                value={element.value}
+                                defaultValue='Linear'
+                                onChange={(event) => handleSelectChange(event, element.id)}
+                                displayEmpty={false}
+                                label="Transition curve"
+                              >
+                                <MenuItem value='0'>Linear</MenuItem>
+                                <MenuItem value="1">Instant</MenuItem>
+                                <MenuItem value="3">Ease In</MenuItem>
+                                <MenuItem value="4">Ease Out</MenuItem>
+                                <MenuItem value="5">Ease In-Out</MenuItem>
+                              </Select>
+                            </Grid>
+                          );
+                        }
+                        if (element.type === 'restriction') {
+                          return (
+                            <Grid item xs={2} key={element.id}>
+                              <TextField value={element.value} label={'Restriction'} onChange={(event) => handleSelectChange(event, element.id)} />
                             </Grid>
                           );
                         }
                         return null;
                       })}
+                      </Grid>
                     </Grid>
                   </div>
                   {/* {inputList} */}
