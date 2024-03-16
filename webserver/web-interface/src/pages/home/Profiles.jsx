@@ -18,8 +18,6 @@ import ProfileChart from '../../components/chart/ProfileChart';
 import { Profile, NamedProfile, GlobalStopConditions } from '../../models/profile';
 import axios from 'axios';
 import { DataGrid } from '@mui/x-data-grid';
-import { elements } from 'chart.js';
-
 
 export default function Profiles() {
   const theme = useTheme();
@@ -31,6 +29,8 @@ export default function Profiles() {
     { id: 4, type: 'transitionType', value: '0' },
     { id: 5, type: 'transitionTime', value: '' },
     { id: 6, type: 'restriction', value: '' },
+    { id: 7, type: 'stopType', value: '0' },
+    { id: 8, type: 'stopValue', value: '' },
   ]
 
   const columns = [
@@ -48,7 +48,7 @@ export default function Profiles() {
   };
 
   const [phases, setElements] = useState(defaultProfileValues);
-  const [nextId, setNextId] = useState(7);
+  const [nextId, setNextId] = useState(defaultProfileValues.length);
   
   const [profiles, setProfiles] = useState(
     [new NamedProfile([])]
@@ -77,10 +77,10 @@ export default function Profiles() {
   const handleAddRow = () => {
     const newElements = [
       ...phases,
-      ...defaultProfileValues
+      ...defaultProfileValues.map((element) => ({ ...element, ['id']: element.id + nextId}))
     ];
     setElements(newElements);
-    setNextId(nextId + 6);
+    setNextId(nextId + defaultProfileValues.length);
     console.log("after update: ", newElements)
   };
 
@@ -98,7 +98,7 @@ export default function Profiles() {
 
   const handleRemoveRow = () => {
     const newElements = [...phases];
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < defaultProfileValues.length; i++) {
       newElements.pop();
     }
     setElements(newElements);
@@ -106,7 +106,7 @@ export default function Profiles() {
 
   const handleRemoveAll = () => {
     setElements(defaultProfileValues);
-    setNextId(7);
+    setNextId(defaultProfileValues.length);
   };
 
   const handleSelectChange = (event, id) => {
@@ -183,11 +183,12 @@ export default function Profiles() {
                       }} />
                         </Grid>
                       </Grid>
-                      <Grid container xs={12} spacing={0}> 
+                      <Grid container xs={12} spacing={1}> 
                       {phases.map((element) => {
-                        if (element.type === 'selectType') {
-                          return (
-                            <Grid item xs={2} key={element.id}>
+                        switch (element.type) {
+                          case 'selectType':
+                            return (
+                              <Grid item xs={1.5}>
                               <Select
                                 value={element.value}
                                 defaultValue='Preinfusion'
@@ -197,36 +198,26 @@ export default function Profiles() {
                               >
                                 <MenuItem value='0'>Flow</MenuItem>
                                 <MenuItem value="1">Pressure</MenuItem>
-                                {/* <MenuItem value="3">Flow</MenuItem>
-                                <MenuItem value="4">Pressure</MenuItem> */}
                               </Select>
-                            </Grid>
-                          );
-                        }
-                        if (element.type === 'targetStart') {
-                          return (
-                            <Grid item xs={2} key={element.id}>
-                              <TextField value={element.value} label={'Target start'} onChange={(event) => handleSelectChange(event, element.id)}/>
-                            </Grid>
-                          );
-                        }
-                        if (element.type === 'targetEnd') {
-                          return (
-                            <Grid item xs={2} key={element.id}>
-                              <TextField value={element.value} label={'Target end'} onChange={(event) => handleSelectChange(event, element.id)} />
-                            </Grid>
-                          );
-                        }
-                        if (element.type === 'transitionTime') {
-                          return (
-                            <Grid item xs={2} key={element.id}>
-                              <TextField value={element.value} label={'Transition time'} onChange={(event) => handleSelectChange(event, element.id)} />
-                            </Grid>
-                          );
-                        }
-                        if (element.type === 'transitionType') {
-                          return (
-                            <Grid item xs={2} key={element.id}>
+                              </Grid>
+                            );
+                          case 'targetStart':
+                          case 'targetEnd':
+                          case 'transitionTime':
+                          case 'restriction':
+                          case 'stopValue':
+                            return (
+                              <Grid item xs={1.5}>
+                              <TextField
+                                value={element.value}
+                                // label={element.type === 'targetStart' ? 'Target start' : element.type === 'targetEnd' ? 'Target end' : element.type === 'transitionTime' ? 'Transition time' : 'Restriction'}
+                                label={element.type}
+                                onChange={(event) => handleSelectChange(event, element.id)}
+                              />
+                              </Grid>
+                            );
+                          case 'transitionType':
+                            return (
                               <Select
                                 value={element.value}
                                 defaultValue='Linear'
@@ -240,17 +231,28 @@ export default function Profiles() {
                                 <MenuItem value="4">Ease Out</MenuItem>
                                 <MenuItem value="5">Ease In-Out</MenuItem>
                               </Select>
-                            </Grid>
-                          );
+                            );
+                          case 'stopType':
+                            return (
+                              <Select
+                                value={element.value}
+                                defaultValue='Time'
+                                onChange={(event) => handleSelectChange(event, element.id)}
+                                displayEmpty={false}
+                                label="Transition curve"
+                              >
+                                <MenuItem value='0'>Time</MenuItem>
+                                <MenuItem value="1">Pressure Above</MenuItem>
+                                <MenuItem value="3">Pressure Below</MenuItem>
+                                <MenuItem value="4">Flow Above</MenuItem>
+                                <MenuItem value="5">Flow Below</MenuItem>
+                                <MenuItem value="6">Weight reached</MenuItem>
+                                <MenuItem value="6">Water pumped</MenuItem>
+                              </Select>
+                            );
+                          default:
+                            return null;
                         }
-                        if (element.type === 'restriction') {
-                          return (
-                            <Grid item xs={2} key={element.id}>
-                              <TextField value={element.value} label={'Restriction'} onChange={(event) => handleSelectChange(event, element.id)} />
-                            </Grid>
-                          );
-                        }
-                        return null;
                       })}
                       </Grid>
                     </Grid>
