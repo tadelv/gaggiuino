@@ -21,6 +21,15 @@ export function parsePhaseType(phaseTypeObj) {
   return phaseType;
 }
 
+export function createPhaseTypeFromString(phaseTypeString) {
+  switch (phaseTypeString.toUpperCase()) {
+    case 'FLOW':
+      return PhaseTypes.FLOW
+    case 'PRESSURE':
+      return PhaseTypes.PRESSURE
+  }
+}
+
 export const CurveStyles = Object.freeze({
   EASE_IN: Symbol('EASE_IN'),
   EASE_OUT: Symbol('EASE_OUT'),
@@ -39,6 +48,23 @@ export function parseCurveStyle(curveStyleObj) {
     throw Error(`${curveStyle} not one of CurveStyles{${Object.keys(CurveStyles).join(',')}}`);
   }
   return curveStyle;
+}
+
+export function createCurveStyleFromString(curveStyleString) {
+  switch (curveStyleString.toUpperCase()) {
+    case 'EASE_IN':
+      return CurveStyles.EASE_IN;
+    case 'EASE_OUT':
+      return CurveStyles.EASE_OUT;
+    case 'EASE_IN_OUT':
+      return CurveStyles.EASE_IN_OUT;
+    case 'LINEAR':
+      return CurveStyles.LINEAR;
+    case 'INSTANT':
+      return CurveStyles.INSTANT;
+    default:
+      throw new Error(`Invalid curve style: ${curveStyleString}`);
+  }
 }
 
 export class Transition {
