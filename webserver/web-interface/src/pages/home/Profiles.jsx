@@ -18,6 +18,10 @@ import ProfileChart from '../../components/chart/ProfileChart';
 import { Profile, NamedProfile, GlobalStopConditions } from '../../models/profile';
 import axios from 'axios';
 import { DataGrid } from '@mui/x-data-grid';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+import List from '@mui/material/List';
+import Table from '@mui/material/Table';
 
 export default function Profiles() {
   const theme = useTheme();
@@ -183,77 +187,90 @@ export default function Profiles() {
                       }} />
                         </Grid>
                       </Grid>
-                      <Grid container xs={12} spacing={1}> 
-                      {phases.map((element) => {
-                        switch (element.type) {
-                          case 'selectType':
-                            return (
-                              <Grid item xs={1.5}>
-                              <Select
-                                value={element.value}
-                                defaultValue='Preinfusion'
-                                onChange={(event) => handleSelectChange(event, element.id)}
-                                displayEmpty={false}
-                                label="Phase"
-                              >
-                                <MenuItem value='0'>Flow</MenuItem>
-                                <MenuItem value="1">Pressure</MenuItem>
-                              </Select>
-                              </Grid>
-                            );
-                          case 'targetStart':
-                          case 'targetEnd':
-                          case 'transitionTime':
-                          case 'restriction':
-                          case 'stopValue':
-                            return (
-                              <Grid item xs={1.5}>
-                              <TextField
-                                value={element.value}
-                                // label={element.type === 'targetStart' ? 'Target start' : element.type === 'targetEnd' ? 'Target end' : element.type === 'transitionTime' ? 'Transition time' : 'Restriction'}
-                                label={element.type}
-                                onChange={(event) => handleSelectChange(event, element.id)}
-                              />
-                              </Grid>
-                            );
-                          case 'transitionType':
-                            return (
-                              <Select
-                                value={element.value}
-                                defaultValue='Linear'
-                                onChange={(event) => handleSelectChange(event, element.id)}
-                                displayEmpty={false}
-                                label="Transition curve"
-                              >
-                                <MenuItem value='0'>Linear</MenuItem>
-                                <MenuItem value="1">Instant</MenuItem>
-                                <MenuItem value="3">Ease In</MenuItem>
-                                <MenuItem value="4">Ease Out</MenuItem>
-                                <MenuItem value="5">Ease In-Out</MenuItem>
-                              </Select>
-                            );
-                          case 'stopType':
-                            return (
-                              <Select
-                                value={element.value}
-                                defaultValue='Time'
-                                onChange={(event) => handleSelectChange(event, element.id)}
-                                displayEmpty={false}
-                                label="Transition curve"
-                              >
-                                <MenuItem value='0'>Time</MenuItem>
-                                <MenuItem value="1">Pressure Above</MenuItem>
-                                <MenuItem value="3">Pressure Below</MenuItem>
-                                <MenuItem value="4">Flow Above</MenuItem>
-                                <MenuItem value="5">Flow Below</MenuItem>
-                                <MenuItem value="6">Weight reached</MenuItem>
-                                <MenuItem value="6">Water pumped</MenuItem>
-                              </Select>
-                            );
-                          default:
-                            return null;
-                        }
-                      })}
+                      <Grid container xs={12} columnSpacing={1} rowSpacing={3}>
+                        {phases.map((element) => {
+                          switch (element.type) {
+                            case 'selectType':
+                              return (
+                                <Grid item xs={2}>
+                                  <FormControl sx={{ minWidth: 150 }}>
+                                  <InputLabel>Type</InputLabel>
+                                  <Select
+                                    value={element.value}
+                                    defaultValue='Preinfusion'
+                                    onChange={(event) => handleSelectChange(event, element.id)}
+                                    displayEmpty={false}
+                                    label="Phase"
+                                  >
+                                    <MenuItem value='0'>Flow</MenuItem>
+                                    <MenuItem value="1">Pressure</MenuItem>
+                                  </Select>
+                                  </FormControl>
+                                </Grid>
+                              );
+                            case 'targetStart':
+                            case 'targetEnd':
+                            case 'transitionTime':
+                            case 'restriction':
+                            case 'stopValue':
+                              return (
+                                <Grid item xs={element.type === 'restriction' ? 8 : element.type === 'targetEnd' ? 4 : 2}>
+                                  <TextField
+                                    value={element.value}
+                                    // label={element.type === 'targetStart' ? 'Target start' : element.type === 'targetEnd' ? 'Target end' : element.type === 'transitionTime' ? 'Transition time' : 'Restriction'}
+                                    label={element.type}
+                                    onChange={(event) => handleSelectChange(event, element.id)}
+                                  />
+                                </Grid>
+                              );
+                            case 'transitionType':
+                              return (
+                                <Grid item xs={2}>
+                                  <FormControl sx={{ minWidth: 150 }}>
+                                    <InputLabel>Transition curve</InputLabel>
+                                  <Select
+                                    value={element.value}
+                                    defaultValue='Linear'
+                                    onChange={(event) => handleSelectChange(event, element.id)}
+                                    displayEmpty={false}
+                                    label="Transition curve"
+                                  >
+                                    <MenuItem value='0'>Linear</MenuItem>
+                                    <MenuItem value="1">Instant</MenuItem>
+                                    <MenuItem value="3">Ease In</MenuItem>
+                                    <MenuItem value="4">Ease Out</MenuItem>
+                                    <MenuItem value="5">Ease In-Out</MenuItem>
+                                  </Select>
+                                  </FormControl>
+                                </Grid>
+                              );
+                            case 'stopType':
+                              return (
+                                <Grid item xs={2}>
+                                  <FormControl sx={{ minWidth: 150 }}>
+                                    <InputLabel>Stop on</InputLabel>
+                                  <Select
+                                    value={element.value}
+                                    defaultValue='Time'
+                                    onChange={(event) => handleSelectChange(event, element.id)}
+                                    displayEmpty={false}
+                                    label="Transition curve"
+                                  >
+                                    <MenuItem value='0'>Time</MenuItem>
+                                    <MenuItem value="1">Pressure Above</MenuItem>
+                                    <MenuItem value="3">Pressure Below</MenuItem>
+                                    <MenuItem value="4">Flow Above</MenuItem>
+                                    <MenuItem value="5">Flow Below</MenuItem>
+                                    <MenuItem value="6">Weight reached</MenuItem>
+                                    <MenuItem value="6">Water pumped</MenuItem>
+                                  </Select>
+                                  </FormControl>
+                                </Grid>
+                              );
+                            default:
+                              return null;
+                          }
+                        })}
                       </Grid>
                     </Grid>
                   </div>
