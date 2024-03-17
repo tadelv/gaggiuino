@@ -61,6 +61,14 @@ void handleGetProfilesList(AsyncWebServerRequest *request) {
       target["end"] = p.target.end;
       target["curve"] = curveToString(p.target.curve);
       target["time"] = p.target.time;
+      JsonObject stopConditions = jsonPhase.createNestedObject("stopConditions");
+      stopConditions["time"] = p.stopConditions.time;
+      stopConditions["pressureAbove"] = p.stopConditions.pressureAbove;
+      stopConditions["pressureBelow"] = p.stopConditions.pressureBelow;
+      stopConditions["flowAbove"] = p.stopConditions.flowAbove;
+      stopConditions["flowBelow"] = p.stopConditions.flowBelow;
+      stopConditions["weight"] = p.stopConditions.weight;
+      stopConditions["waterPumpedInPhase"] = p.stopConditions.waterPumpedInPhase;
     }
   }
 
