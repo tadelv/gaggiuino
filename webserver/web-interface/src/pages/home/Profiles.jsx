@@ -139,15 +139,23 @@ export default function Profiles() {
   }
 
   function createProfileValuesFromProfile(profile) {
-    const values = profile.phases.flatMap((phase) => {
+    const values = profile.phases.flatMap((phase, phaseIndex) => {
       const phaseValues = JSON.parse(JSON.stringify(defaultProfileValues))
       console.log(phase)
+      for (let index = 0; index < defaultProfileValues.length; index++) {
+        phaseValues[index].id = String((phaseIndex * defaultProfileValues.length + 1 * index + 1))
+      }
       phaseValues[0].value = phase.type
       phaseValues[1].value = phase.target.start
       phaseValues[2].value = phase.target.end
       phaseValues[3].value = phase.target.curve
       phaseValues[4].value = phase.target.time / 1000
       phaseValues[5].value = phase.restriction
+      phaseValues[6].value = phase.stopConditions.time
+      phaseValues[7].value = phase.stopConditions.weight
+      phaseValues[8].value = phase.stopConditions.pressureAbove
+      phaseValues[9].value = phase.stopConditions.pressureBelow
+      phaseValues[10].value = phase.stopConditions.waterPumpedInPhase
       return phaseValues 
     })
     console.log(values)

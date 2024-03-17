@@ -55,20 +55,44 @@ void handleGetProfilesList(AsyncWebServerRequest *request) {
     for (Phase p : profile.profile.phases) {
       JsonObject jsonPhase = jsonPhases.createNestedObject();
       jsonPhase["type"] = p.type == PHASE_TYPE::PHASE_TYPE_FLOW ? "FLOW" : "PRESSURE";
-      jsonPhase["restriction"] = p.getRestriction();
+      const float restriction = p.getRestriction();
+      if (restriction > 0) {
+        jsonPhase["restriction"] = restriction;
+      }
       JsonObject target = jsonPhase.createNestedObject("target");
       target["start"] = p.target.start;
       target["end"] = p.target.end;
       target["curve"] = curveToString(p.target.curve);
       target["time"] = p.target.time;
       JsonObject stopConditions = jsonPhase.createNestedObject("stopConditions");
-      stopConditions["time"] = p.stopConditions.time;
-      stopConditions["pressureAbove"] = p.stopConditions.pressureAbove;
-      stopConditions["pressureBelow"] = p.stopConditions.pressureBelow;
-      stopConditions["flowAbove"] = p.stopConditions.flowAbove;
-      stopConditions["flowBelow"] = p.stopConditions.flowBelow;
-      stopConditions["weight"] = p.stopConditions.weight;
-      stopConditions["waterPumpedInPhase"] = p.stopConditions.waterPumpedInPhase;
+      if (p.stopConditions.time > 0)
+      {
+        stopConditions["time"] = p.stopConditions.time;
+      }
+      if (p.stopConditions.pressureAbove > 0)
+      {
+        stopConditions["pressureAbove"] = p.stopConditions.pressureAbove;
+      }
+      if (p.stopConditions.pressureBelow > 0)
+      {
+        stopConditions["pressureBelow"] = p.stopConditions.pressureBelow;
+      }
+      if (p.stopConditions.flowAbove > 0)
+      {
+        stopConditions["flowAbove"] = p.stopConditions.flowAbove;
+      }
+      if (p.stopConditions.flowBelow > 0)
+      {
+        stopConditions["flowBelow"] = p.stopConditions.flowBelow;
+      }
+      if (p.stopConditions.weight > 0)
+      {
+        stopConditions["weight"] = p.stopConditions.weight;
+      }
+      if (p.stopConditions.waterPumpedInPhase > 0)
+      {
+        stopConditions["waterPumpedInPhase"] = p.stopConditions.waterPumpedInPhase;
+      }
     }
   }
 
