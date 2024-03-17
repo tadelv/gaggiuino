@@ -184,4 +184,10 @@ void handlePostProfileSave(AsyncWebServerRequest *request, JsonVariant &body) {
   profileToSave.profile = profile;
   LOG_INFO("saving: %s", profileToSave.name);
   fsSaveProfile(profileToSave);
+
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  DynamicJsonDocument json(2048);
+  JsonArray profilesJson = json.to<JsonArray>();
+  serializeJson(profilesJson, *response);
+  request->send(response);
 }

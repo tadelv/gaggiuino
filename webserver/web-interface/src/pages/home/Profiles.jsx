@@ -29,7 +29,7 @@ export default function Profiles() {
     { id: 11, type: 'stopWater', value: '' },
   ]
 
-  const [newProfileName, setNewProfileName] = useState("")
+  const [currentProfileName, setCurrentProfileName] = useState("")
 
   const [globalStopConditions, setGlobalStopConditions] = useState(
     { time: 0, weight: 0, totalWaterPumped: 0 }
@@ -44,7 +44,6 @@ export default function Profiles() {
   const [nextId, setNextId] = useState(defaultProfileValues.length);
 
   const handleApply = (event) => {
-    console.log("applying")
     let currentPhaseValues = {}; // Object to accumulate values for the current Phase
     const newPhases = [];
     let globalStopConditions;
@@ -101,11 +100,10 @@ export default function Profiles() {
       const phase = createPhaseFromValues(currentPhaseValues);
       newPhases.push(phase);
     }
-    console.log(newPhases)
 
     const newProfile = new Profile(newPhases, globalStopConditions)
     setProfile(newProfile)
-    saveProfile({name: "abc" + profiles.length, profile: newProfile}).then(result => {
+    saveProfile({name: currentProfileName, profile: newProfile}).then(result => {
       setApplyMessage({ text: 'Profile saved' })
     })
   }
@@ -139,8 +137,10 @@ export default function Profiles() {
     );
   }
 
-  function createProfileValuesFromProfile(profile) {
-    const values = profile.phases.flatMap((phase, phaseIndex) => {
+  function createProfileValuesFromProfile(namedProfile) {
+    console.log(namedProfile)
+    const fromProfile = namedProfile.profile
+    const values = fromProfile.phases.flatMap((phase, phaseIndex) => {
       const phaseValues = JSON.parse(JSON.stringify(defaultProfileValues))
       console.log(phase)
       for (let index = 0; index < defaultProfileValues.length; index++) {
@@ -161,6 +161,8 @@ export default function Profiles() {
     })
     console.log(values)
     setElements(values)
+    setGlobalStopConditions(fromProfile.stopConditions)
+    setCurrentProfileName(namedProfile.name)
   }
   
   const [profiles, setProfiles] = useState(
@@ -257,7 +259,20 @@ export default function Profiles() {
       </Container>
       <Container sx={{ mt: theme.spacing(2) }}>
         <Card sx={{ mt: theme.spacing(2) }}>
-      {BuildProfileEditor(theme, handleRemoveAll, handleRemoveRow, handleAddRow, globalStopConditions, setGlobalStopConditions, phases, handleSelectChange, handleApply)}
+      {BuildProfileEditor(
+        theme, 
+        handleRemoveAll, 
+        handleRemoveRow, 
+        handleAddRow, 
+        globalStopConditions, 
+        setGlobalStopConditions, 
+        phases, 
+        handleSelectChange, 
+        handleApply,
+        currentProfileName,
+        setCurrentProfileName
+        )
+        }
           {
             applyMessage &&
             <Alert severity={applyMessage.type}>
@@ -296,7 +311,7 @@ export default function Profiles() {
         <FullFeaturedCrudGrid
           initialState={[profileRows, setProfiles]}
           handleEdit={(id) => {
-            createProfileValuesFromProfile(profiles[id].profile)
+            createProfileValuesFromProfile(profiles[id])
             updateProfile(JSON.stringify(profiles[id].profile))
           }
           }

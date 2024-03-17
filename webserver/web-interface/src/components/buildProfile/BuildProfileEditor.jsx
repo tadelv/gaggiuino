@@ -12,7 +12,19 @@ import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import { GridSeparatorIcon } from '@mui/x-data-grid';
 
-export default function BuildProfileEditor(theme, handleRemoveAll, handleRemoveRow, handleAddRow, globalStopConditions, setGlobalStopConditions, phases, handleSelectChange, handleApply) {
+export default function BuildProfileEditor(
+  theme, 
+  handleRemoveAll, 
+  handleRemoveRow, 
+  handleAddRow, 
+  globalStopConditions, 
+  setGlobalStopConditions, 
+  phases, 
+  handleSelectChange, 
+  handleApply,
+  currentProfileName,
+  setCurrentProfileName
+  ) {
   return <Grid container rowSpacing={1} columns={{ xs: 1, sm: 1 }}>
         {/* <Grid item xs={1}> */}
           <CardContent>
@@ -33,17 +45,22 @@ export default function BuildProfileEditor(theme, handleRemoveAll, handleRemoveR
               <div>
                 <Grid container rowSpacing={3} spacing={2}>
                   <Grid container xs={12} m={5}>
-                    <Grid item xs={4}>
+              <Grid item xs={3}>
+                <TextField label="Profile name" value={currentProfileName} onChange={(event) => {
+                  setCurrentProfileName(event.target.value)
+                }} />
+              </Grid>
+                    <Grid item xs={3}>
                       <TextField label="Time(s)" value={globalStopConditions.time > 0 ? globalStopConditions.time : ""} onChange={(event) => {
                         setGlobalStopConditions({ ...globalStopConditions, ['time']: event.target.value });
                       }} />
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={3}>
                       <TextField label="Weight(g)" value={globalStopConditions.weight > 0 ? globalStopConditions.weight : ""} onChange={(event) => {
                         setGlobalStopConditions({ ...globalStopConditions, ['weight']: event.target.value });
                       }} />
                     </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={3}>
                       <TextField label="Total water(ml)" value={globalStopConditions.totalWaterPumped > 0 ? globalStopConditions.totalWaterPumped : ""} onChange={(event) => {
                         setGlobalStopConditions({ ...globalStopConditions, ['totalWaterPumped']: event.target.value });
                       }} />
