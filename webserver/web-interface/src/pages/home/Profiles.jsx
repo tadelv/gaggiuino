@@ -5,21 +5,12 @@ import {
 import IconButton from '@mui/material/IconButton';
 import QrCodeIcon from '@mui/icons-material/QrCode';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import AutoGraphIcon from '@mui/icons-material/AutoGraph';
-import DeleteIcon from '@mui/icons-material/Delete';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-// import InputAdornment from '@mui/material/InputAdornment';
 import Grid from '@mui/material/Unstable_Grid2';
 import ProfileChart from '../../components/chart/ProfileChart';
 import { Profile, NamedProfile, GlobalStopConditions, createCurveStyleFromString, createPhaseTypeFromString, PhaseStopConditions, PhaseTypes, Phase, Transition } from '../../models/profile';
 import axios from 'axios';
 import { DataGrid } from '@mui/x-data-grid';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
+import BuildProfileEditor from '../../components/buildProfile/BuildProfileEditor';
 
 export default function Profiles() {
   const theme = useTheme();
@@ -261,117 +252,7 @@ export default function Profiles() {
       </Container>
       <Container sx={{ mt: theme.spacing(2) }}>
         <Card sx={{ mt: theme.spacing(2) }}>
-          <Grid container columns={{ xs: 1, sm: 1 }}>
-            <Grid item xs={1}>
-              <CardContent>
-                <Typography gutterBottom variant="h5">
-                  Build Profile
-                  <IconButton style={{ float: 'right' }} onClick={handleRemoveAll} color="primary" aria-label="upload picture" component="label" sx={{ ml: theme.spacing(3) }}>
-                    <DeleteIcon fontSize="large" />
-                  </IconButton>
-                  <IconButton style={{ float: 'right' }} onClick={handleRemoveRow} color="primary" aria-label="upload picture" component="label" sx={{ ml: theme.spacing(3) }}>
-                    <RemoveIcon fontSize="large" />
-                  </IconButton>
-                  <IconButton style={{ float: 'right' }} onClick={handleAddRow} color="primary" aria-label="upload picture" component="label" sx={{ ml: theme.spacing(3) }}>
-                    <AddIcon fontSize="large" />
-                  </IconButton>
-                  <IconButton style={{ float: 'right' }} color="primary" aria-label="upload picture" component="label" sx={{ ml: theme.spacing(3) }}>
-                    <AutoGraphIcon fontSize="large" />
-                  </IconButton>
-                  <div>
-                    <Grid container spacing={2}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={4}>
-                      <TextField  label="Time(s)" value={globalStopConditions.time > 0 ? globalStopConditions.time : ""} onChange={(event) => {
-                        setGlobalStopConditions({ ...globalStopConditions, ['time']: event.target.value })
-                      }} />
-                        </Grid> 
-                        <Grid item xs={4}>
-                      <TextField label="Weight(g)" value={globalStopConditions.weight > 0 ? globalStopConditions.weight : ""} onChange={(event) => {
-                        setGlobalStopConditions({ ...globalStopConditions, ['weight']: event.target.value })
-                      }} />
-                        </Grid>
-                        <Grid item xs={4}>
-                      <TextField label="Total water(ml)" value={globalStopConditions.totalWaterPumped > 0 ? globalStopConditions.totalWaterPumped : ""} onChange={(event) => {
-                        setGlobalStopConditions({ ...globalStopConditions, ['totalWaterPumped']: event.target.value })
-                      }} />
-                        </Grid>
-                      </Grid>
-                      <Grid container xs={12} columnSpacing={1} rowSpacing={3}>
-                        {phases.map((element) => {
-                          switch (element.type) {
-                            case 'selectType':
-                              return (
-                                <Grid item xs={2}>
-                                  <FormControl sx={{ minWidth: 150 }}>
-                                  <InputLabel>Type</InputLabel>
-                                  <Select
-                                    value={element.value}
-                                    defaultValue='Preinfusion'
-                                    onChange={(event) => handleSelectChange(event, element.id)}
-                                    displayEmpty={false}
-                                    label="Phase"
-                                  >
-                                      <MenuItem value='FLOW'>Flow</MenuItem>
-                                      <MenuItem value="PRESSURE">Pressure</MenuItem>
-                                  </Select>
-                                  </FormControl>
-                                </Grid>
-                              );
-                            case 'targetStart':
-                            case 'targetEnd':
-                            case 'transitionTime':
-                            case 'restriction':
-                            case 'stopTime':
-                            case 'stopWeightAbove':
-                            case 'stopPressureAbove':
-                            case 'stopPressureBelow':
-                            case 'stopWater':
-                              return (
-                                <Grid item xs={element.type === 'restriction' ? 2 : element.type === 'targetEnd' ? 4 : 2}>
-                                  <TextField
-                                    value={element.value}
-                                    // label={element.type === 'targetStart' ? 'Target start' : element.type === 'targetEnd' ? 'Target end' : element.type === 'transitionTime' ? 'Transition time' : 'Restriction'}
-                                    label={element.type}
-                                    onChange={(event) => handleSelectChange(event, element.id)}
-                                  />
-                                </Grid>
-                              );
-                            case 'transitionType':
-                              return (
-                                <Grid item xs={2}>
-                                  <FormControl sx={{ minWidth: 150 }}>
-                                    <InputLabel>Transition curve</InputLabel>
-                                  <Select
-                                    value={element.value}
-                                      defaultValue='LINEAR'
-                                    onChange={(event) => handleSelectChange(event, element.id)}
-                                    displayEmpty={false}
-                                    label="Transition curve"
-                                  >
-                                      <MenuItem value='LINEAR'>Linear</MenuItem>
-                                      <MenuItem value="INSTANT">Instant</MenuItem>
-                                      <MenuItem value="EASE_IN">Ease In</MenuItem>
-                                      <MenuItem value="EASE_OUT">Ease Out</MenuItem>
-                                      <MenuItem value="EASE_IN_OUT">Ease In-Out</MenuItem>
-                                  </Select>
-                                  </FormControl>
-                                </Grid>
-                              );
-                            default:
-                              return null;
-                          }
-                        })}
-                      </Grid>
-                    </Grid>
-                  </div>
-                  <div>
-                    <IconButton onClick={handleApply}>Apply</IconButton>
-                  </div>
-                </Typography>
-              </CardContent>
-            </Grid>
-          </Grid>
+      {BuildProfileEditor(theme, handleRemoveAll, handleRemoveRow, handleAddRow, globalStopConditions, setGlobalStopConditions, phases, handleSelectChange, handleApply)}
         </Card>
       </Container>
       <Container sx={{ mt: theme.spacing(2) }}>
