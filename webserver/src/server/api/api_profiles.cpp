@@ -1,7 +1,7 @@
 #include "api_profiles.h"
 #include "AsyncTCP.h"
 #include <ArduinoJson.h>
-// #include "../utils/server_utils.h"
+#include "../utils/server_utils.h"
 #include "../../wifi/wifi_setup.h"
 #include "../../log/log.h"
 #include "../../filesystem/filesystem.h"
@@ -9,11 +9,14 @@
 void handleGetProfilesList(AsyncWebServerRequest *request);
 void handlePostUpdateProfile(AsyncWebServerRequest * request, JsonVariant &body);
 void handleDeleteProfile(AsyncWebServerRequest *request, JsonVariant &body);
-void handlePutProfileSelect(AsyncWebServerRequest *request, JsonVariant &body);
+void handlePostProfileSelect(AsyncWebServerRequest *request, JsonVariant &body);
+void handlePostProfileSave(AsyncWebServerRequest *request, JsonVariant &body);
 
 void setupProfilesApi(AsyncWebServer &server)
 {
   server.on("/api/profiles/list", HTTP_GET, handleGetProfilesList);
+  server.addHandler(jsonHandler("/api/profiles/setDefault", HTTP_POST, handlePostProfileSelect));
+  server.addHandler(jsonHandler("/api/profiles/save", HTTP_POST, handlePostProfileSave));
 }
 
 const char *curveToString(TransitionCurve curve)
@@ -32,6 +35,34 @@ const char *curveToString(TransitionCurve curve)
     return "INSTANT";
   default:
     return "UNKNOWN_TRANSITION_CURVE";
+  }
+}
+
+TransitionCurve stringToCurve(const char *str)
+{
+  if (strcmp(str, "EASE_IN_OUT") == 0)
+  {
+    return TransitionCurve::EASE_IN_OUT;
+  }
+  else if (strcmp(str, "EASE_IN") == 0)
+  {
+    return TransitionCurve::EASE_IN;
+  }
+  else if (strcmp(str, "EASE_OUT") == 0)
+  {
+    return TransitionCurve::EASE_OUT;
+  }
+  else if (strcmp(str, "LINEAR") == 0)
+  {
+    return TransitionCurve::LINEAR;
+  }
+  else if (strcmp(str, "INSTANT") == 0)
+  {
+    return TransitionCurve::INSTANT;
+  }
+  else
+  {
+    return TransitionCurve::INSTANT;
   }
 }
 
@@ -98,4 +129,59 @@ void handleGetProfilesList(AsyncWebServerRequest *request) {
 
   serializeJson(profilesJson, *response);
   request->send(response);
+}
+
+Profile deserializeProfileJSON(JsonVariant body) {
+  Profile newDefaultProfile;
+
+  JsonArray jsonPhases = body["phases"];
+  for (JsonVariant jsonPhase : jsonPhases)
+  {
+    Phase phase;
+    JsonObject jsonPhaseObj = jsonPhase.as<JsonObject>();
+    phase.type = jsonPhaseObj["type"].as<String>() == "FLOW" ? PHASE_TYPE::PHASE_TYPE_FLOW : PHASE_TYPE::PHASE_TYPE_PRESSURE;
+    phase.restriction = jsonPhaseObj["restriction"].as<float>(); // May need to adjust based on the actual data type
+    JsonObject target = jsonPhaseObj["target"];
+    phase.target.start = target["start"].as<float>();
+    phase.target.end = target["end"].as<float>();
+    phase.target.curve = stringToCurve(target["curve"].as<String>().c_str());
+    phase.target.time = target["time"].as<float>();
+    JsonObject stopConditions = jsonPhaseObj["stopConditions"];
+    phase.stopConditions.time = stopConditions["time"].as<int>();                        // May need to adjust based on the actual data type
+    phase.stopConditions.weight = stopConditions["weight"].as<float>();                  // May need to adjust based on the actual data type
+    phase.stopConditions.waterPumpedInPhase = stopConditions["waterPumped"].as<float>(); // May need to adjust based on the actual data type
+    // Deserialize other fields if needed
+    newDefaultProfile.phases.push_back(phase);
+  }
+
+  JsonObject stopConditions = body["stopConditions"];
+  newDefaultProfile.globalStopConditions.time = stopConditions["time"];
+  newDefaultProfile.globalStopConditions.weight = stopConditions["weight"];
+  newDefaultProfile.globalStopConditions.waterPumped = stopConditions["waterPumped"];
+
+  LOG_INFO("new profile! count: %d", newDefaultProfile.phaseCount());
+  return newDefaultProfile;
+}
+
+void handlePostProfileSelect(AsyncWebServerRequest *request, JsonVariant &body) {
+  LOG_INFO("received set default request");
+
+  Profile newDefaultProfile = deserializeProfileJSON(body);
+
+  AsyncResponseStream *response = request->beginResponseStream("application/json");
+  DynamicJsonDocument json(2048);
+  JsonArray profilesJson = json.to<JsonArray>();
+  serializeJson(profilesJson, *response);
+  request->send(response);
+}
+
+void handlePostProfileSave(AsyncWebServerRequest *request, JsonVariant &body) {
+  String profileName = body["name"].as<String>();
+  Profile profile = deserializeProfileJSON(body["profile"]);
+
+  NamedProfile profileToSave;
+  strcpy(profileToSave.name, profileName.c_str());
+  profileToSave.profile = profile;
+  LOG_INFO("saving: %s", profileToSave.name);
+  fsSaveProfile(profileToSave);
 }

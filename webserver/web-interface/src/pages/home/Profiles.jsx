@@ -8,9 +8,9 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import Grid from '@mui/material/Unstable_Grid2';
 import ProfileChart from '../../components/chart/ProfileChart';
 import { Profile, NamedProfile, GlobalStopConditions, createCurveStyleFromString, createPhaseTypeFromString, PhaseStopConditions, PhaseTypes, Phase, Transition } from '../../models/profile';
-import axios from 'axios';
 import BuildProfileEditor from '../../components/buildProfile/BuildProfileEditor';
 import FullFeaturedCrudGrid from '../../components/profilesList/ProfilesList';
+import { getProfiles, setDefaultProfile, saveProfile } from '../../models/profileApi';
 
 export default function Profiles() {
   const theme = useTheme();
@@ -105,8 +105,9 @@ export default function Profiles() {
 
     const newProfile = new Profile(newPhases, globalStopConditions)
     setProfile(newProfile)
-    setApplyMessage({text: 'Profile saved'})
-
+    saveProfile({name: "abc" + profiles.length, profile: newProfile}).then(result => {
+      setApplyMessage({ text: 'Profile saved' })
+    })
   }
 
   useEffect(() => {
@@ -170,11 +171,6 @@ export default function Profiles() {
     () => profiles.map((profile, index) => ({id: index, name: profile.name})),
     [profiles]
   )
-
-  async function getProfiles() {
-    return axios.get('/api/profiles/list')
-      .then(({ data }) => data);
-  }
 
   async function loadProfiles() {
     const newProfiles = await getProfiles();
@@ -306,6 +302,7 @@ export default function Profiles() {
           }
           setDefault={(id) => {
             console.log("sending profile to mcu");
+            setDefaultProfile(profiles[id].profile)
           }
           }
         ></FullFeaturedCrudGrid>
