@@ -37,7 +37,7 @@ export default function Profiles() {
   const handleOnChangeGlobalStopConditions = event => {
     const { name, value } = event.target;
     console.log("setting " + name + "and " + value)
-    setGlobalStopConditions({ ...globalStopConditions, [name]: 0+value});
+    setGlobalStopConditions({ ...globalStopConditions, [name]: 0 + value });
   };
 
   const [phases, setElements] = useState(defaultProfileValues);
@@ -95,7 +95,7 @@ export default function Profiles() {
           break;
       }
     });
-    
+
     if (Object.keys(currentPhaseValues).length !== 0) {
       const phase = createPhaseFromValues(currentPhaseValues);
       newPhases.push(phase);
@@ -103,7 +103,7 @@ export default function Profiles() {
 
     const newProfile = new Profile(newPhases, globalStopConditions)
     setProfile(newProfile)
-    saveProfile({name: currentProfileName, profile: newProfile}).then(result => {
+    saveProfile({ name: currentProfileName, profile: newProfile }).then(result => {
       setApplyMessage({ text: 'Profile saved' })
     })
   }
@@ -111,8 +111,8 @@ export default function Profiles() {
   useEffect(() => {
     setTimeout(() => {
       if (applyMessage !== undefined && applyMessage.type === undefined) {
-      setApplyMessage(undefined);
-    }
+        setApplyMessage(undefined);
+      }
     }, 3000);
   })
 
@@ -127,7 +127,7 @@ export default function Profiles() {
       weight: values.stopWeightAbove,
       waterPumpedInPhase: values.stopWater
     }
-    
+
     return new Phase(
       values.type,
       new Transition(values.targetStart, values.targetEnd, values.transitionType, values.transitionTime),
@@ -157,20 +157,20 @@ export default function Profiles() {
       phaseValues[8].value = phase.stopConditions.pressureAbove !== undefined ? phase.stopConditions.pressureAbove : undefined;
       phaseValues[9].value = phase.stopConditions.pressureBelow !== undefined ? phase.stopConditions.pressureBelow : undefined;
       phaseValues[10].value = phase.stopConditions.waterPumpedInPhase !== undefined ? phase.stopConditions.waterPumpedInPhase : undefined;
-      return phaseValues 
+      return phaseValues
     })
     console.log(values)
     setElements(values)
     setGlobalStopConditions(fromProfile.stopConditions)
     setCurrentProfileName(namedProfile.name)
   }
-  
+
   const [profiles, setProfiles] = useState(
     [new NamedProfile([])]
   );
 
   const profileRows = useMemo(
-    () => profiles.map((profile, index) => ({id: index, name: profile.name})),
+    () => profiles.map((profile, index) => ({ id: index, name: profile.name })),
     [profiles]
   )
 
@@ -181,13 +181,13 @@ export default function Profiles() {
 
   useEffect(() => {
     // Fetch objects from the server when the component mounts
-   loadProfiles();
+    loadProfiles();
   }, []);
 
   const handleAddRow = () => {
     const newElements = [
       ...phases,
-      ...defaultProfileValues.map((element) => ({ ...element, ['id']: element.id + nextId}))
+      ...defaultProfileValues.map((element) => ({ ...element, ['id']: element.id + nextId }))
     ];
     setElements(newElements);
     setNextId(nextId + defaultProfileValues.length);
@@ -259,25 +259,25 @@ export default function Profiles() {
       </Container>
       <Container sx={{ mt: theme.spacing(2) }}>
         <Card sx={{ mt: theme.spacing(2) }}>
-      {BuildProfileEditor(
-        theme, 
-        handleRemoveAll, 
-        handleRemoveRow, 
-        handleAddRow, 
-        globalStopConditions, 
-        setGlobalStopConditions, 
-        phases, 
-        handleSelectChange, 
-        handleApply,
-        currentProfileName,
-        setCurrentProfileName
-        )
-        }
+          {BuildProfileEditor(
+            theme,
+            handleRemoveAll,
+            handleRemoveRow,
+            handleAddRow,
+            globalStopConditions,
+            setGlobalStopConditions,
+            phases,
+            handleSelectChange,
+            handleApply,
+            currentProfileName,
+            setCurrentProfileName
+          )
+          }
           {
             applyMessage &&
             <Alert severity={applyMessage.type}>
-                {applyMessage.text}
-          </Alert>
+              {applyMessage.text}
+            </Alert>
           }
         </Card>
       </Container>
