@@ -15,26 +15,27 @@ import MenuItem from '@mui/material/MenuItem';
 // import InputAdornment from '@mui/material/InputAdornment';
 import Grid from '@mui/material/Unstable_Grid2';
 import ProfileChart from '../../components/chart/ProfileChart';
-import { Profile, NamedProfile, GlobalStopConditions } from '../../models/profile';
+import { Profile, NamedProfile, GlobalStopConditions, createCurveStyleFromString, createPhaseTypeFromString, PhaseStopConditions, PhaseTypes, Phase, Transition } from '../../models/profile';
 import axios from 'axios';
 import { DataGrid } from '@mui/x-data-grid';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
-import List from '@mui/material/List';
-import Table from '@mui/material/Table';
 
 export default function Profiles() {
   const theme = useTheme();
 
   const defaultProfileValues = [
-    { id: 1, type: 'selectType', value: '0' },
+    { id: 1, type: 'selectType', value: 'FLOW' },
     { id: 2, type: 'targetStart', value: '' },
     { id: 3, type: 'targetEnd', value: '' },
-    { id: 4, type: 'transitionType', value: '0' },
+    { id: 4, type: 'transitionType', value: 'INSTANT' },
     { id: 5, type: 'transitionTime', value: '' },
     { id: 6, type: 'restriction', value: '' },
-    { id: 7, type: 'stopType', value: '0' },
-    { id: 8, type: 'stopValue', value: '' },
+    { id: 7, type: 'stopTime', value: '' },
+    { id: 8, type: 'stopWeightAbove', value: '' },
+    { id: 9, type: 'stopPressureAbove', value: '' },
+    { id: 10, type: 'stopPressureBelow', value: '' },
+    { id: 11, type: 'stopWater', value: '' },
   ]
 
   const columns = [
@@ -53,6 +54,89 @@ export default function Profiles() {
 
   const [phases, setElements] = useState(defaultProfileValues);
   const [nextId, setNextId] = useState(defaultProfileValues.length);
+
+  const handleApply = (event) => {
+    console.log("applying")
+    let currentPhaseValues = {}; // Object to accumulate values for the current Phase
+    const newPhases = [];
+    let globalStopConditions;
+
+    phases.forEach(item => {
+      switch (item.type) {
+        case 'selectType':
+          // If currentPhaseValues is not empty, create a Phase object and push it to newPhases array
+          if (Object.keys(currentPhaseValues).length !== 0) {
+            const phase = createPhaseFromValues(currentPhaseValues);
+            newPhases.push(phase);
+            currentPhaseValues = {}; // Reset currentPhaseValues for the next Phase
+          }
+          // Set type for the new Phase
+          currentPhaseValues.type = createPhaseTypeFromString(item.value);
+          break;
+        case 'targetStart':
+          currentPhaseValues.targetStart = parseFloat(item.value);
+          break;
+        case 'targetEnd':
+          currentPhaseValues.targetEnd = parseFloat(item.value);
+          break;
+        case 'transitionType':
+          currentPhaseValues.transitionType = createCurveStyleFromString(item.value);
+          break;
+        case 'transitionTime':
+          currentPhaseValues.transitionTime = parseFloat(item.value) * 1000;
+          break;
+        case 'restriction':
+          currentPhaseValues.restriction = parseFloat(item.value);
+          break;
+        case 'stopTime':
+          currentPhaseValues.stopTime = parseFloat(item.value) * 1000;
+          break;
+        case 'stopWeightAbove':
+          currentPhaseValues.stopWeightAbove = parseFloat(item.value);
+          break;
+        case 'stopPressureAbove':
+          currentPhaseValues.stopPressureAbove = parseFloat(item.value);
+          break;
+        case 'stopPressureBelow':
+          currentPhaseValues.stopPressureBelow = parseFloat(item.value);
+          break;
+        case 'stopWater':
+          currentPhaseValues.stopWater = parseFloat(item.value);
+          break;
+        default:
+          // Handle default case if necessary
+          break;
+      }
+    });
+    
+    if (Object.keys(currentPhaseValues).length !== 0) {
+      const phase = createPhaseFromValues(currentPhaseValues);
+      newPhases.push(phase);
+    }
+    console.log(newPhases)
+
+    const newProfile = new Profile(newPhases, globalStopConditions)
+    setProfile(newProfile)
+  }
+
+  function createPhaseFromValues(values) {
+    // Create Phase object using the accumulated values
+    const conditions = {
+      time: values.stopTime,
+      pressureAbove: values.stopPressureAbove,
+      pressureBelow: values.stopPressureBelow,
+      weight: values.stopWeightAbove,
+      waterPumpedInPhase: values.stopWater
+    }
+    
+    return new Phase(
+      values.type,
+      new Transition(values.targetStart, values.targetEnd, values.transitionType, values.transitionTime),
+      values.restriction,
+      conditions
+      // new PhaseStopConditions({[values.stopType]: values.stopValue})
+    );
+  }
   
   const [profiles, setProfiles] = useState(
     [new NamedProfile([])]
@@ -202,8 +286,8 @@ export default function Profiles() {
                                     displayEmpty={false}
                                     label="Phase"
                                   >
-                                    <MenuItem value='0'>Flow</MenuItem>
-                                    <MenuItem value="1">Pressure</MenuItem>
+                                      <MenuItem value='FLOW'>Flow</MenuItem>
+                                      <MenuItem value="PRESSURE">Pressure</MenuItem>
                                   </Select>
                                   </FormControl>
                                 </Grid>
@@ -212,9 +296,13 @@ export default function Profiles() {
                             case 'targetEnd':
                             case 'transitionTime':
                             case 'restriction':
-                            case 'stopValue':
+                            case 'stopTime':
+                            case 'stopWeightAbove':
+                            case 'stopPressureAbove':
+                            case 'stopPressureBelow':
+                            case 'stopWater':
                               return (
-                                <Grid item xs={element.type === 'restriction' ? 8 : element.type === 'targetEnd' ? 4 : 2}>
+                                <Grid item xs={element.type === 'restriction' ? 2 : element.type === 'targetEnd' ? 4 : 2}>
                                   <TextField
                                     value={element.value}
                                     // label={element.type === 'targetStart' ? 'Target start' : element.type === 'targetEnd' ? 'Target end' : element.type === 'transitionTime' ? 'Transition time' : 'Restriction'}
@@ -230,39 +318,16 @@ export default function Profiles() {
                                     <InputLabel>Transition curve</InputLabel>
                                   <Select
                                     value={element.value}
-                                    defaultValue='Linear'
+                                      defaultValue='LINEAR'
                                     onChange={(event) => handleSelectChange(event, element.id)}
                                     displayEmpty={false}
                                     label="Transition curve"
                                   >
-                                    <MenuItem value='0'>Linear</MenuItem>
-                                    <MenuItem value="1">Instant</MenuItem>
-                                    <MenuItem value="3">Ease In</MenuItem>
-                                    <MenuItem value="4">Ease Out</MenuItem>
-                                    <MenuItem value="5">Ease In-Out</MenuItem>
-                                  </Select>
-                                  </FormControl>
-                                </Grid>
-                              );
-                            case 'stopType':
-                              return (
-                                <Grid item xs={2}>
-                                  <FormControl sx={{ minWidth: 150 }}>
-                                    <InputLabel>Stop on</InputLabel>
-                                  <Select
-                                    value={element.value}
-                                    defaultValue='Time'
-                                    onChange={(event) => handleSelectChange(event, element.id)}
-                                    displayEmpty={false}
-                                    label="Transition curve"
-                                  >
-                                    <MenuItem value='0'>Time</MenuItem>
-                                    <MenuItem value="1">Pressure Above</MenuItem>
-                                    <MenuItem value="3">Pressure Below</MenuItem>
-                                    <MenuItem value="4">Flow Above</MenuItem>
-                                    <MenuItem value="5">Flow Below</MenuItem>
-                                    <MenuItem value="6">Weight reached</MenuItem>
-                                    <MenuItem value="6">Water pumped</MenuItem>
+                                      <MenuItem value='LINEAR'>Linear</MenuItem>
+                                      <MenuItem value="INSTANT">Instant</MenuItem>
+                                      <MenuItem value="EASE_IN">Ease In</MenuItem>
+                                      <MenuItem value="EASE_OUT">Ease Out</MenuItem>
+                                      <MenuItem value="EASE_IN_OUT">Ease In-Out</MenuItem>
                                   </Select>
                                   </FormControl>
                                 </Grid>
@@ -274,7 +339,9 @@ export default function Profiles() {
                       </Grid>
                     </Grid>
                   </div>
-                  {/* {inputList} */}
+                  <div>
+                    <IconButton onClick={handleApply}>Apply</IconButton>
+                  </div>
                 </Typography>
               </CardContent>
             </Grid>
@@ -296,6 +363,7 @@ export default function Profiles() {
               <TextareaAutosize
                 minRows={15}
                 onChange={(evt) => updateProfile(evt.target.value)}
+                value={JSON.stringify(profile)}
                 style={{ width: '100%', backgroundColor: theme.palette.background.paper, color: theme.palette.text.secondary }}
               >
               </TextareaAutosize>
