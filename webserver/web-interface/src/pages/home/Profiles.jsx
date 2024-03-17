@@ -137,6 +137,22 @@ export default function Profiles() {
       // new PhaseStopConditions({[values.stopType]: values.stopValue})
     );
   }
+
+  function createProfileValuesFromProfile(profile) {
+    const values = profile.phases.flatMap((phase) => {
+      const phaseValues = JSON.parse(JSON.stringify(defaultProfileValues))
+      console.log(phase)
+      phaseValues[0].value = phase.type
+      phaseValues[1].value = phase.target.start
+      phaseValues[2].value = phase.target.end
+      phaseValues[3].value = phase.target.curve
+      phaseValues[4].value = phase.target.time / 1000
+      phaseValues[5].value = phase.restriction
+      return phaseValues 
+    })
+    console.log(values)
+    setElements(values)
+  }
   
   const [profiles, setProfiles] = useState(
     [new NamedProfile([])]
@@ -195,6 +211,8 @@ export default function Profiles() {
   const handleRemoveAll = () => {
     setElements(defaultProfileValues);
     setNextId(defaultProfileValues.length);
+    setGlobalStopConditions({})
+    handleApply()
   };
 
   const handleSelectChange = (event, id) => {
@@ -404,6 +422,8 @@ export default function Profiles() {
             onRowClick={
               (params, event, details) => {
                 updateProfile(JSON.stringify(profiles[params.row.id].profile))
+                // setProfile(profiles[params.row.id.profile].profile)
+                createProfileValuesFromProfile(profiles[params.row.id].profile)
               }
             }
           />
