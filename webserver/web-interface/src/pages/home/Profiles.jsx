@@ -9,8 +9,8 @@ import Grid from '@mui/material/Unstable_Grid2';
 import ProfileChart from '../../components/chart/ProfileChart';
 import { Profile, NamedProfile, GlobalStopConditions, createCurveStyleFromString, createPhaseTypeFromString, PhaseStopConditions, PhaseTypes, Phase, Transition } from '../../models/profile';
 import axios from 'axios';
-import { DataGrid } from '@mui/x-data-grid';
 import BuildProfileEditor from '../../components/buildProfile/BuildProfileEditor';
+import FullFeaturedCrudGrid from '../../components/profilesList/ProfilesList';
 
 export default function Profiles() {
   const theme = useTheme();
@@ -29,10 +29,7 @@ export default function Profiles() {
     { id: 11, type: 'stopWater', value: '' },
   ]
 
-  const columns = [
-    // { field: 'id', headerName: 'ID' },
-    { field: 'name', headerName: 'Name' },
-  ];
+  const [newProfileName, setNewProfileName] = useState("")
 
   const [globalStopConditions, setGlobalStopConditions] = useState(
     { time: 0, weight: 0, totalWaterPumped: 0 }
@@ -108,7 +105,19 @@ export default function Profiles() {
 
     const newProfile = new Profile(newPhases, globalStopConditions)
     setProfile(newProfile)
+    setApplyMessage({text: 'Profile saved'})
+
   }
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (applyMessage !== undefined && applyMessage.type === undefined) {
+      setApplyMessage(undefined);
+    }
+    }, 3000);
+  })
+
+  const [applyMessage, setApplyMessage] = useState(undefined)
 
   function createPhaseFromValues(values) {
     // Create Phase object using the accumulated values
@@ -136,17 +145,17 @@ export default function Profiles() {
       for (let index = 0; index < defaultProfileValues.length; index++) {
         phaseValues[index].id = String((phaseIndex * defaultProfileValues.length + 1 * index + 1))
       }
-      phaseValues[0].value = phase.type
-      phaseValues[1].value = phase.target.start
-      phaseValues[2].value = phase.target.end
-      phaseValues[3].value = phase.target.curve
-      phaseValues[4].value = phase.target.time / 1000
-      phaseValues[5].value = phase.restriction
-      phaseValues[6].value = phase.stopConditions.time
-      phaseValues[7].value = phase.stopConditions.weight
-      phaseValues[8].value = phase.stopConditions.pressureAbove
-      phaseValues[9].value = phase.stopConditions.pressureBelow
-      phaseValues[10].value = phase.stopConditions.waterPumpedInPhase
+      phaseValues[0].value = phase.type !== undefined ? phase.type : undefined;
+      phaseValues[1].value = phase.target.start !== undefined ? phase.target.start : undefined;
+      phaseValues[2].value = phase.target.end !== undefined ? phase.target.end : undefined;
+      phaseValues[3].value = phase.target.curve !== undefined ? phase.target.curve : undefined;
+      phaseValues[4].value = phase.target.time !== undefined ? phase.target.time / 1000 : undefined;
+      phaseValues[5].value = phase.restriction !== undefined ? phase.restriction : undefined;
+      phaseValues[6].value = phase.stopConditions.time !== undefined ? phase.stopConditions.time / 1000 : undefined;
+      phaseValues[7].value = phase.stopConditions.weight !== undefined ? phase.stopConditions.weight : undefined;
+      phaseValues[8].value = phase.stopConditions.pressureAbove !== undefined ? phase.stopConditions.pressureAbove : undefined;
+      phaseValues[9].value = phase.stopConditions.pressureBelow !== undefined ? phase.stopConditions.pressureBelow : undefined;
+      phaseValues[10].value = phase.stopConditions.waterPumpedInPhase !== undefined ? phase.stopConditions.waterPumpedInPhase : undefined;
       return phaseValues 
     })
     console.log(values)
@@ -253,6 +262,12 @@ export default function Profiles() {
       <Container sx={{ mt: theme.spacing(2) }}>
         <Card sx={{ mt: theme.spacing(2) }}>
       {BuildProfileEditor(theme, handleRemoveAll, handleRemoveRow, handleAddRow, globalStopConditions, setGlobalStopConditions, phases, handleSelectChange, handleApply)}
+          {
+            applyMessage &&
+            <Alert severity={applyMessage.type}>
+                {applyMessage.text}
+          </Alert>
+          }
         </Card>
       </Container>
       <Container sx={{ mt: theme.spacing(2) }}>
@@ -282,42 +297,18 @@ export default function Profiles() {
         </Paper>
       </Container>
       <Container>
-        <Paper sx={{ mt: theme.spacing(2), p: theme.spacing(2) }}>
-          {/* <Grid container spacing={2}>
-            {profiles.map((profile, index) => (
-              <li key={index} onClick={() => updateProfile(JSON.stringify(profile.profile))}>
-                {profile.name}
-                </li>
-            ))}
-          </Grid> */}
-          <div style={{ height: 300, width: '100%' }}>
-          <DataGrid
-            component={Typography}
-            rows={
-              profileRows
-            }
-            columns={columns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 5,
-                },
-              },
-            }}
-            pageSizeOptions={[]}
-            // checkboxSelection
-            disableRowSelectionOnClick
-            disableColumnSelector
-            onRowClick={
-              (params, event, details) => {
-                updateProfile(JSON.stringify(profiles[params.row.id].profile))
-                // setProfile(profiles[params.row.id.profile].profile)
-                createProfileValuesFromProfile(profiles[params.row.id].profile)
-              }
-            }
-          />
-          </div>
-        </Paper>
+        <FullFeaturedCrudGrid
+          initialState={[profileRows, setProfiles]}
+          handleEdit={(id) => {
+            createProfileValuesFromProfile(profiles[id].profile)
+            updateProfile(JSON.stringify(profiles[id].profile))
+          }
+          }
+          setDefault={(id) => {
+            console.log("sending profile to mcu");
+          }
+          }
+        ></FullFeaturedCrudGrid>
       </Container>
     </div>
   );
