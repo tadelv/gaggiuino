@@ -29,6 +29,7 @@ ui_object_set_themeable_style_property(lv_tabview_get_tab_btns(ui_TabView1),  LV
 ui_object_set_themeable_style_property(lv_tabview_get_tab_btns(ui_TabView1),  LV_PART_ITEMS| LV_STATE_DEFAULT, LV_STYLE_BG_OPA, _ui_theme_alpha_Background);
 
 ui_TabPage1 = lv_tabview_add_tab(ui_TabView1, "Home");
+lv_obj_clear_flag( ui_TabPage1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 
 ui_Container1 = lv_obj_create(ui_TabPage1);
 lv_obj_remove_style_all(ui_Container1);
@@ -62,6 +63,106 @@ ui_Label2 = lv_label_create(ui_Button1);
 lv_obj_set_width( ui_Label2, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_Label2, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_Label2, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label2,"Cleaning");
+
+ui_Container2 = lv_obj_create(ui_TabPage1);
+lv_obj_remove_style_all(ui_Container2);
+lv_obj_set_width( ui_Container2, 200);
+lv_obj_set_height( ui_Container2, 20);
+lv_obj_set_x( ui_Container2, 50 );
+lv_obj_set_y( ui_Container2, -75 );
+lv_obj_set_align( ui_Container2, LV_ALIGN_CENTER );
+lv_obj_set_flex_flow(ui_Container2,LV_FLEX_FLOW_ROW_WRAP);
+lv_obj_set_flex_align(ui_Container2, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
+lv_obj_clear_flag( ui_Container2, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+
+ui_Label4 = lv_label_create(ui_Container2);
+lv_obj_set_width( ui_Label4, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_Label4, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_Label4, LV_ALIGN_CENTER );
+lv_label_set_text(ui_Label4,"Profile: ");
+ui_object_set_themeable_style_property(ui_Label4, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Foreground);
+ui_object_set_themeable_style_property(ui_Label4, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Foreground);
+
+ui_profileNameLabel = lv_label_create(ui_Container2);
+lv_obj_set_height( ui_profileNameLabel, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_flex_grow( ui_profileNameLabel, 1);
+lv_obj_set_align( ui_profileNameLabel, LV_ALIGN_CENTER );
+lv_label_set_long_mode(ui_profileNameLabel,LV_LABEL_LONG_SCROLL_CIRCULAR);
+lv_label_set_text(ui_profileNameLabel,"Loading ...");
+ui_object_set_themeable_style_property(ui_profileNameLabel, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Foreground);
+ui_object_set_themeable_style_property(ui_profileNameLabel, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Foreground);
+
+ui_Container3 = lv_obj_create(ui_TabPage1);
+lv_obj_remove_style_all(ui_Container3);
+lv_obj_set_width( ui_Container3, lv_pct(67));
+lv_obj_set_height( ui_Container3, lv_pct(90));
+lv_obj_set_align( ui_Container3, LV_ALIGN_BOTTOM_RIGHT );
+lv_obj_set_flex_flow(ui_Container3,LV_FLEX_FLOW_ROW_WRAP);
+lv_obj_set_flex_align(ui_Container3, LV_FLEX_ALIGN_SPACE_EVENLY, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_SPACE_EVENLY);
+lv_obj_clear_flag( ui_Container3, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+
+ui_currentProfileGraph = lv_chart_create(ui_Container3);
+lv_obj_set_height( ui_currentProfileGraph, 60);
+lv_obj_set_width( ui_currentProfileGraph, lv_pct(100));
+lv_obj_set_align( ui_currentProfileGraph, LV_ALIGN_CENTER );
+lv_chart_set_type( ui_currentProfileGraph, LV_CHART_TYPE_LINE);
+lv_chart_set_axis_tick( ui_currentProfileGraph, LV_CHART_AXIS_PRIMARY_X, 10, 5, 5, 2, false, 50);
+lv_chart_set_axis_tick( ui_currentProfileGraph, LV_CHART_AXIS_PRIMARY_Y, 10, 5, 5, 2, false, 50);
+lv_chart_set_axis_tick( ui_currentProfileGraph, LV_CHART_AXIS_SECONDARY_Y, 10, 5, 5, 2, false, 25);
+lv_obj_set_style_bg_color(ui_currentProfileGraph, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_currentProfileGraph, 50, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+
+
+ui_tempGauge = lv_arc_create(ui_Container3);
+lv_obj_set_width( ui_tempGauge, 75);
+lv_obj_set_height( ui_tempGauge, 75);
+lv_obj_set_align( ui_tempGauge, LV_ALIGN_CENTER );
+lv_obj_clear_flag( ui_tempGauge, LV_OBJ_FLAG_CLICKABLE );    /// Flags
+lv_arc_set_range(ui_tempGauge, 0,120);
+lv_arc_set_value(ui_tempGauge, 50);
+lv_obj_set_style_arc_color(ui_tempGauge, lv_color_hex(0x4040FF), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_arc_opa(ui_tempGauge, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+lv_obj_set_style_arc_color(ui_tempGauge, lv_color_hex(0xFF404F), LV_PART_INDICATOR | LV_STATE_DEFAULT );
+lv_obj_set_style_arc_opa(ui_tempGauge, 255, LV_PART_INDICATOR| LV_STATE_DEFAULT);
+lv_obj_set_style_arc_rounded(ui_tempGauge, false, LV_PART_INDICATOR| LV_STATE_DEFAULT);
+
+lv_obj_set_style_bg_color(ui_tempGauge, lv_color_hex(0xFFFFFF), LV_PART_KNOB | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_tempGauge, 0, LV_PART_KNOB| LV_STATE_DEFAULT);
+
+ui_tempLabel = lv_label_create(ui_tempGauge);
+lv_obj_set_width( ui_tempLabel, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_tempLabel, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_tempLabel, LV_ALIGN_CENTER );
+lv_label_set_text(ui_tempLabel,"98.7");
+ui_object_set_themeable_style_property(ui_tempLabel, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Foreground);
+ui_object_set_themeable_style_property(ui_tempLabel, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Foreground);
+
+ui_waterGauge = lv_arc_create(ui_Container3);
+lv_obj_set_width( ui_waterGauge, 75);
+lv_obj_set_height( ui_waterGauge, 75);
+lv_obj_set_align( ui_waterGauge, LV_ALIGN_CENTER );
+lv_obj_clear_flag( ui_waterGauge, LV_OBJ_FLAG_CLICKABLE );    /// Flags
+lv_arc_set_value(ui_waterGauge, 30);
+lv_obj_set_style_arc_color(ui_waterGauge, lv_color_hex(0x4040FF), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_arc_opa(ui_waterGauge, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+lv_obj_set_style_arc_color(ui_waterGauge, lv_color_hex(0x4061FF), LV_PART_INDICATOR | LV_STATE_DEFAULT );
+lv_obj_set_style_arc_opa(ui_waterGauge, 255, LV_PART_INDICATOR| LV_STATE_DEFAULT);
+lv_obj_set_style_arc_rounded(ui_waterGauge, false, LV_PART_INDICATOR| LV_STATE_DEFAULT);
+
+lv_obj_set_style_bg_color(ui_waterGauge, lv_color_hex(0xFFFFFF), LV_PART_KNOB | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_waterGauge, 0, LV_PART_KNOB| LV_STATE_DEFAULT);
+
+ui_waterLabel = lv_label_create(ui_waterGauge);
+lv_obj_set_width( ui_waterLabel, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_waterLabel, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_align( ui_waterLabel, LV_ALIGN_CENTER );
+lv_label_set_text(ui_waterLabel,"30%");
+ui_object_set_themeable_style_property(ui_waterLabel, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_COLOR, _ui_theme_color_Foreground);
+ui_object_set_themeable_style_property(ui_waterLabel, LV_PART_MAIN| LV_STATE_DEFAULT, LV_STYLE_TEXT_OPA, _ui_theme_alpha_Foreground);
 
 ui_TabPage2 = lv_tabview_add_tab(ui_TabView1, "Profiles");
 

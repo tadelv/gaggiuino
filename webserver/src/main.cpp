@@ -9,38 +9,35 @@
 #include "./log/log.h"
 #include "ui/esp_ui.h"
 
-void setup() {
+void handleWsSetDefaultProfile(NamedProfile profile);
+
+void setup()
+{
   LOG_INIT();
   REMOTE_LOG_INIT([](std::string message) {wsSendLog(message);});
   initFS();
   stmCommsInit(Serial1);
   wifiSetup();
   webServerSetup();
-  UI::init();
+  uiInit();
 
-  listFS();
-  fsDeleteProfile("test");
-  auto profiles = fsGetProfiles();
-  for (NamedProfile pr : profiles)
-  {
-    LOG_INFO("have: %s, phases: %u", pr.name, pr.profile.phaseCount());
-    fsDeleteProfile(pr.name);
+  auto storedProfiles = fsGetProfiles();
+  if (!storedProfiles.empty()) {
+    NamedProfile profile = storedProfiles[0];
+    handleWsSetDefaultProfile(profile);
   }
-
-  Profile profile;
-  profile.phases.push_back({PHASE_TYPE::PHASE_TYPE_PRESSURE, Transition(0.f, 10.f, TransitionCurve::EASE_IN_OUT, 1000), -1, PhaseStopConditions{.time = 1000}});
-  profile.phases.push_back({PHASE_TYPE::PHASE_TYPE_FLOW, Transition(10.f, 5.f, TransitionCurve::LINEAR), 2.f, PhaseStopConditions{.weight = 10.f}});
-  profile.phases.push_back({PHASE_TYPE::PHASE_TYPE_FLOW, Transition(10.f, 5.f, TransitionCurve::LINEAR), 3.f, PhaseStopConditions{.pressureAbove = 2.f}});
-
-  NamedProfile pr;
-  strcpy(pr.name, "test");
-  pr.profile = profile;
-  fsSaveProfile(pr);
 }
 
 void loop() {
   // vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
-  UI::handleLoop();
+  uiHandleLoop();
+  if (millis() % 1000 == 0) {
+    SensorStateSnapshot sensorData;
+    sensorData.temperature = random(90, 100);
+    sensorData.waterLvl = 33; //random(15, 85);
+    sensorData.weight = 0;
+    onSensorStateSnapshotReceived(sensorData);
+  }
 }
 
 // ------------------------------------------------------------------------
@@ -48,14 +45,20 @@ void loop() {
 // ------------------------------------------------------------------------
 void onSensorStateSnapshotReceived(SensorStateSnapshot& sensorData) {
   wsSendSensorStateSnapshotToClients(sensorData);
-  UI::handleStateSnapshot(sensorData);
+  uiHandleStateSnapshot(sensorData);
 }
 
 void onShotSnapshotReceived(ShotSnapshot& shotData) {
   wsSendShotSnapshotToClients(shotData);
-  UI::handleShotSnapshot(shotData);
+  uiHandleShotSnapshot(shotData);
 }
 
-void onScalesTareReceived() {
-  // bleScalesTare();
+void stmResponseReceived(McuCommsResponse response) {
+  LOG_INFO("received response %s for %d", response.result == McuCommsResponseResult::MCUC_OK ? "ok" : "error", response.type);
+}
+
+void handleWsSetDefaultProfile(NamedProfile profile) {
+  LOG_INFO("Setting default profile to: %s", profile.name);
+  stmCommsSendProfile(profile.profile);
+  uiHandleCurrentProfileChange(profile);
 }

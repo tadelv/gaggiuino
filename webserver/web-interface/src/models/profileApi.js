@@ -15,3 +15,8 @@ export async function saveProfile(namedProfile) {
   return axios.post('/api/profiles/save', namedProfile)
     .then(({ data }) => data);
 }
+
+export async function deleteProfile(namedProfile) {
+  return axios.delete("api/profiles/" + namedProfile.name)
+  .then(({data}) => data);
+}

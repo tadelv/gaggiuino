@@ -4,7 +4,7 @@
 #include "ui/ui.h"
 #include "src/server/websocket/websocket.h"
 
-void UI::init()
+void uiInit()
 {
   smartdisplay_init();
   auto disp = lv_disp_get_default();
@@ -12,16 +12,33 @@ void UI::init()
   ui_init();
 }
 
-void UI::handleLoop()
+void uiHandleLoop()
 {
   lv_timer_handler(); /* let the GUI do its work */
 }
 
-void UI::handleStateSnapshot(const SensorStateSnapshot &state)
+void uiHandleCurrentProfileChange(NamedProfile profile)
+{
+  lv_label_set_text(ui_profileNameLabel, profile.name);
+}
+
+void uiHandleStateSnapshot(const SensorStateSnapshot &state)
+{
+  char tempChar[4];
+  sprintf(tempChar, "%.1f", state.temperature);
+  lv_label_set_text(ui_tempLabel, tempChar);
+  lv_arc_set_value(ui_tempGauge, (int)state.temperature);
+  char wtrLvlChar[5];
+  sprintf(wtrLvlChar, "%d%%", state.waterLvl);
+  lv_label_set_text(ui_waterLabel, wtrLvlChar);
+  lv_arc_set_value(ui_waterGauge, state.waterLvl);
+}
+
+void uiHandleShotSnapshot(const ShotSnapshot &snapshot)
 {
 }
 
-void UI::handleShotSnapshot(const ShotSnapshot &snapshot)
+void uiSetActiveProfileName(const char *name)
 {
 }
 
@@ -40,59 +57,6 @@ void sendFlushAction(lv_event_t *e)
   snapshot.weightFlow = 0.5;
   snapshot.weight = 200.4;
   wsSendSensorStateSnapshotToClients(snapshot);
-
-  /*
-  {
-      "phases": [
-          {
-              "type": "FLOW",
-              "target": {
-                  "start": 6,
-                  "end": 7,
-                  "curve": "EASE_IN_OUT",
-                  "time": 7000
-              },
-              "restriction": 2.5,
-              "stopConditions": {
-                  "time": 10000,
-                  "weight": 50
-              }
-          },
-          {
-              "type": "FLOW",
-              "target": {
-                  "start": 3,
-                  "end": 9,
-                  "curve": "EASE_IN_OUT",
-                  "time": 8000
-              },
-              "restriction": 2,
-              "stopConditions": {
-                  "time": 12000,
-                  "weight": 60
-              }
-          }
-      ],
-      "globalStopConditions": {
-          "time": 70000,
-          "weight": 66,
-          "waterPumped": 120
-      }
-  }
-  */
-  Profile profile;
-  profile.addPhase(
-      {PHASE_TYPE::PHASE_TYPE_FLOW,
-       Transition(),
-       2.5,
-       {-1, 5, 2, 25, 60}});
-  // JsonObject root;
-  // JsonObject data = root.createNestedObject("profile");
-  // JsonArray phases = data.createNestedArray("phases");
-  // JsonObject phase = phases.add()
-  // std::string serializedProfile;
-  // serializeJson(root, serializedProfile);
-  // log_i("profile: %s", serializedProfile.c_str());
 }
 
 static lv_chart_series_t *pressureSeries;

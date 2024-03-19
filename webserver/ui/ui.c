@@ -21,6 +21,15 @@ lv_obj_t *ui_Label1;
 void ui_event_Button1( lv_event_t * e);
 lv_obj_t *ui_Button1;
 lv_obj_t *ui_Label2;
+lv_obj_t *ui_Container2;
+lv_obj_t *ui_Label4;
+lv_obj_t *ui_profileNameLabel;
+lv_obj_t *ui_Container3;
+lv_obj_t *ui_currentProfileGraph;
+lv_obj_t *ui_tempGauge;
+lv_obj_t *ui_tempLabel;
+lv_obj_t *ui_waterGauge;
+lv_obj_t *ui_waterLabel;
 lv_obj_t *ui_TabPage2;
 lv_obj_t *ui_TabPage3;
 
@@ -31,8 +40,8 @@ void ui_event_BrewingScreen( lv_event_t * e);
 lv_obj_t *ui_BrewingScreen;
 lv_obj_t *ui_BrewGraphBack;
 lv_obj_t *ui_BrewGraph;
-void ui_event_Button2( lv_event_t * e);
-lv_obj_t *ui_Button2;
+void ui_event_closeBrewScreenButton( lv_event_t * e);
+lv_obj_t *ui_closeBrewScreenButton;
 lv_obj_t *ui_Label3;
 lv_obj_t *ui_timeLabel;
 lv_obj_t *ui_Panel1;
@@ -52,7 +61,6 @@ lv_obj_t *ui_tValueLabel;
 void ui_EditProfileScreen_screen_init(void);
 lv_obj_t *ui_EditProfileScreen;
 lv_obj_t *ui____initial_actions0;
-const lv_img_dsc_t *ui_imgset_coffee_x[1] = {&ui_img_coffee_256x256_png};
 
 ///////////////////// TEST LVGL SETTINGS ////////////////////
 #if LV_COLOR_DEPTH != 16
@@ -83,7 +91,7 @@ if ( event_code == LV_EVENT_SCREEN_LOADED) {
       brewingScreenAppear( e );
 }
 }
-void ui_event_Button2( lv_event_t * e) {
+void ui_event_closeBrewScreenButton( lv_event_t * e) {
     lv_event_code_t event_code = lv_event_get_code(e);lv_obj_t * target = lv_event_get_target(e);
 if ( event_code == LV_EVENT_CLICKED) {
       _ui_screen_change( &ui_HomeScreen, LV_SCR_LOAD_ANIM_FADE_ON, 200, 0, &ui_HomeScreen_screen_init);

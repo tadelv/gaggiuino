@@ -10,7 +10,7 @@ import ProfileChart from '../../components/chart/ProfileChart';
 import { Profile, NamedProfile, GlobalStopConditions, createCurveStyleFromString, createPhaseTypeFromString, PhaseStopConditions, PhaseTypes, Phase, Transition } from '../../models/profile';
 import BuildProfileEditor from '../../components/buildProfile/BuildProfileEditor';
 import FullFeaturedCrudGrid from '../../components/profilesList/ProfilesList';
-import { getProfiles, setDefaultProfile, saveProfile } from '../../models/profileApi';
+import { getProfiles, setDefaultProfile, saveProfile, deleteProfile } from '../../models/profileApi';
 
 export default function Profiles() {
   const theme = useTheme();
@@ -105,6 +105,9 @@ export default function Profiles() {
     setProfile(newProfile)
     saveProfile({ name: currentProfileName, profile: newProfile }).then(result => {
       setApplyMessage({ text: 'Profile saved' })
+    })
+    loadProfiles().then(result => {
+      console.log("profiles loaded")
     })
   }
 
@@ -317,9 +320,14 @@ export default function Profiles() {
           }
           setDefault={(id) => {
             console.log("sending profile to mcu");
-            setDefaultProfile(profiles[id].profile)
+            setDefaultProfile(profiles[id])
           }
-          }
+        }
+        handleDelete={(id) => {
+          deleteProfile(profiles[id]).then((result) => {
+            loadProfiles().then()
+          })
+        }}
         ></FullFeaturedCrudGrid>
       </Container>
     </div>

@@ -39,6 +39,15 @@ extern lv_obj_t *ui_Label1;
 void ui_event_Button1( lv_event_t * e);
 extern lv_obj_t *ui_Button1;
 extern lv_obj_t *ui_Label2;
+extern lv_obj_t *ui_Container2;
+extern lv_obj_t *ui_Label4;
+extern lv_obj_t *ui_profileNameLabel;
+extern lv_obj_t *ui_Container3;
+extern lv_obj_t *ui_currentProfileGraph;
+extern lv_obj_t *ui_tempGauge;
+extern lv_obj_t *ui_tempLabel;
+extern lv_obj_t *ui_waterGauge;
+extern lv_obj_t *ui_waterLabel;
 extern lv_obj_t *ui_TabPage2;
 extern lv_obj_t *ui_TabPage3;
 // SCREEN: ui_BrewingScreen
@@ -47,8 +56,8 @@ void ui_event_BrewingScreen( lv_event_t * e);
 extern lv_obj_t *ui_BrewingScreen;
 extern lv_obj_t *ui_BrewGraphBack;
 extern lv_obj_t *ui_BrewGraph;
-void ui_event_Button2( lv_event_t * e);
-extern lv_obj_t *ui_Button2;
+void ui_event_closeBrewScreenButton( lv_event_t * e);
+extern lv_obj_t *ui_closeBrewScreenButton;
 extern lv_obj_t *ui_Label3;
 extern lv_obj_t *ui_timeLabel;
 extern lv_obj_t *ui_Panel1;
@@ -67,7 +76,6 @@ void ui_EditProfileScreen_screen_init(void);
 extern lv_obj_t *ui_EditProfileScreen;
 extern lv_obj_t *ui____initial_actions0;
 
-LV_IMG_DECLARE( ui_img_coffee_256x256_png);   // assets/coffee.256x256.png
 
 
 

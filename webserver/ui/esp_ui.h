@@ -3,13 +3,13 @@
 
 #include "sensors_state.h"
 #include "profiling_phases.h"
+#include <src/filesystem/filesystem.h>
 
-struct UI {
-  public:
-  static void init();
-  static void handleLoop();
-  static void handleStateSnapshot(const SensorStateSnapshot &state);
-  static void handleShotSnapshot(const ShotSnapshot &snapshot);
-};
+void uiInit();
+void uiHandleLoop();
+void uiHandleCurrentProfileChange(NamedProfile profile);
+void uiHandleStateSnapshot(const SensorStateSnapshot &state);
+void uiHandleShotSnapshot(const ShotSnapshot &snapshot);
+void uiSetActiveProfileName(const char *name);
 
 #endif //ESP_UI_H

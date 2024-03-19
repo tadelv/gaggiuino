@@ -60,6 +60,7 @@ export default function FullFeaturedCrudGrid(props) {
 
   const handleDeleteClick = (id) => () => {
     setRows(rows.filter((row) => row.id !== id));
+    props.handleDelete(id)
   };
 
   const handleCancelClick = (id) => () => {
@@ -131,7 +132,7 @@ export default function FullFeaturedCrudGrid(props) {
           <GridActionsCellItem
             icon={<DeleteIcon />}
             label="Delete"
-            // onClick={handleDeleteClick(id)}
+            onClick={handleDeleteClick(id)}
             color="inherit"
           />,
           <GridActionsCellItem

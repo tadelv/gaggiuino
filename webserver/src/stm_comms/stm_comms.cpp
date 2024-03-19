@@ -18,7 +18,8 @@ void stmCommsInit(HardwareSerial& serial) {
   // Set callbacks
   mcuComms.setShotSnapshotCallback(onShotSnapshotReceived);
   mcuComms.setSensorStateSnapshotCallback(onSensorStateSnapshotReceived);
-  mcuComms.setRemoteScalesTareCommandCallback(onScalesTareReceived);
+  // mcuComms.setRemoteScalesTareCommandCallback(onScalesTareReceived);
+  mcuComms.setResponseReceivedCallback(stmResponseReceived);
 
   xTaskCreateUniversal(stmCommsTask, "stmComms", configMINIMAL_STACK_SIZE + 2400, NULL, PRIORITY_STM_COMMS, NULL, CORE_STM_COMMS);
 }
@@ -33,18 +34,6 @@ void stmCommsTask(void* params) {
 void stmCommsReadData() {
   if (xSemaphoreTakeRecursive(mcucLock, portMAX_DELAY) == pdFALSE) return;
   mcuComms.readDataAndTick();
-  xSemaphoreGiveRecursive(mcucLock);
-}
-
-void stmCommsSendWeight(float weight) {
-  if (xSemaphoreTakeRecursive(mcucLock, portMAX_DELAY) == pdFALSE) return;
-  mcuComms.sendRemoteScalesWeight(weight);
-  xSemaphoreGiveRecursive(mcucLock);
-}
-
-void stmCommsSendScaleDisconnected() {
-  if (xSemaphoreTakeRecursive(mcucLock, portMAX_DELAY) == pdFALSE) return;
-  mcuComms.sendRemoteScalesDisconnected();
   xSemaphoreGiveRecursive(mcucLock);
 }
 

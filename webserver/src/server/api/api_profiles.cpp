@@ -6,8 +6,10 @@
 #include "../../log/log.h"
 #include "../../filesystem/filesystem.h"
 
+void handleWsSetDefaultProfile(NamedProfile profile);
+
 void handleGetProfilesList(AsyncWebServerRequest *request);
-void handlePostUpdateProfile(AsyncWebServerRequest * request, JsonVariant &body);
+void handlePostUpdateProfile(AsyncWebServerRequest *request, JsonVariant &body);
 void handleDeleteProfile(AsyncWebServerRequest *request, JsonVariant &body);
 void handlePostProfileSelect(AsyncWebServerRequest *request, JsonVariant &body);
 void handlePostProfileSave(AsyncWebServerRequest *request, JsonVariant &body);
@@ -17,6 +19,20 @@ void setupProfilesApi(AsyncWebServer &server)
   server.on("/api/profiles/list", HTTP_GET, handleGetProfilesList);
   server.addHandler(jsonHandler("/api/profiles/setDefault", HTTP_POST, handlePostProfileSelect));
   server.addHandler(jsonHandler("/api/profiles/save", HTTP_POST, handlePostProfileSave));
+  server.on(
+      "/api/profiles",
+      HTTP_DELETE,
+      [](AsyncWebServerRequest *request)
+      {
+        String url = request->url();
+        LOG_INFO("url: %s", url.c_str());
+        url.replace("/api/profiles/", "");
+        const char *profileName =  url.c_str();
+        LOG_INFO("prf name: %s", profileName);
+        LOG_INFO("%s", profileName);
+        fsDeleteProfile(profileName);
+        request->send(200);
+      });
 }
 
 const char *curveToString(TransitionCurve curve)
@@ -66,7 +82,8 @@ TransitionCurve stringToCurve(const char *str)
   }
 }
 
-void handleGetProfilesList(AsyncWebServerRequest *request) {
+void handleGetProfilesList(AsyncWebServerRequest *request)
+{
   LOG_INFO("List profiles request");
 
   AsyncResponseStream *response = request->beginResponseStream("application/json");
@@ -83,11 +100,13 @@ void handleGetProfilesList(AsyncWebServerRequest *request) {
     stopConditions["weight"] = profile.profile.globalStopConditions.weight;
     stopConditions["waterPumped"] = profile.profile.globalStopConditions.waterPumped;
     JsonArray jsonPhases = profileDetails.createNestedArray("phases");
-    for (Phase p : profile.profile.phases) {
+    for (Phase p : profile.profile.phases)
+    {
       JsonObject jsonPhase = jsonPhases.createNestedObject();
       jsonPhase["type"] = p.type == PHASE_TYPE::PHASE_TYPE_FLOW ? "FLOW" : "PRESSURE";
       const float restriction = p.getRestriction();
-      if (restriction > 0) {
+      if (restriction > 0)
+      {
         jsonPhase["restriction"] = restriction;
       }
       JsonObject target = jsonPhase.createNestedObject("target");
@@ -131,7 +150,8 @@ void handleGetProfilesList(AsyncWebServerRequest *request) {
   request->send(response);
 }
 
-Profile deserializeProfileJSON(JsonVariant body) {
+Profile deserializeProfileJSON(JsonVariant body)
+{
   Profile newDefaultProfile;
 
   JsonArray jsonPhases = body["phases"];
@@ -159,23 +179,31 @@ Profile deserializeProfileJSON(JsonVariant body) {
   newDefaultProfile.globalStopConditions.weight = stopConditions["weight"];
   newDefaultProfile.globalStopConditions.waterPumped = stopConditions["waterPumped"];
 
-  LOG_INFO("new profile! count: %d", newDefaultProfile.phaseCount());
   return newDefaultProfile;
 }
 
-void handlePostProfileSelect(AsyncWebServerRequest *request, JsonVariant &body) {
-  LOG_INFO("received set default request");
+void handlePostProfileSelect(AsyncWebServerRequest *request, JsonVariant &body)
+{
 
-  Profile newDefaultProfile = deserializeProfileJSON(body);
+  String profileName = body["name"].as<String>();
+  Profile profile = deserializeProfileJSON(body["profile"]);
+
+  NamedProfile profileToSave;
+  strcpy(profileToSave.name, profileName.c_str());
+  profileToSave.profile = profile;
+
+  LOG_DEBUG("received set default request for: %s", profileToSave.name);
 
   AsyncResponseStream *response = request->beginResponseStream("application/json");
   DynamicJsonDocument json(2048);
   JsonArray profilesJson = json.to<JsonArray>();
   serializeJson(profilesJson, *response);
   request->send(response);
+  handleWsSetDefaultProfile(profileToSave);
 }
 
-void handlePostProfileSave(AsyncWebServerRequest *request, JsonVariant &body) {
+void handlePostProfileSave(AsyncWebServerRequest *request, JsonVariant &body)
+{
   String profileName = body["name"].as<String>();
   Profile profile = deserializeProfileJSON(body["profile"]);
 
