@@ -27,6 +27,11 @@ extern "C" {
 #include "ui_theme_manager.h"
 #include "ui_themes.h"
 
+// SCREEN: ui_Splash
+void ui_Splash_screen_init(void);
+extern lv_obj_t *ui_Splash;
+extern lv_obj_t *ui_Spinner2;
+extern lv_obj_t *ui_Label5;
 // SCREEN: ui_HomeScreen
 void ui_HomeScreen_screen_init(void);
 extern lv_obj_t *ui_HomeScreen;
@@ -36,18 +41,31 @@ extern lv_obj_t *ui_Container1;
 void ui_event_flushButton( lv_event_t * e);
 extern lv_obj_t *ui_flushButton;
 extern lv_obj_t *ui_Label1;
-void ui_event_Button1( lv_event_t * e);
-extern lv_obj_t *ui_Button1;
+void ui_event_cleaningButton( lv_event_t * e);
+extern lv_obj_t *ui_cleaningButton;
 extern lv_obj_t *ui_Label2;
+extern lv_obj_t *ui_Button1;
+extern lv_obj_t *ui_manualBrewLabel;
 extern lv_obj_t *ui_Container2;
 extern lv_obj_t *ui_Label4;
 extern lv_obj_t *ui_profileNameLabel;
 extern lv_obj_t *ui_Container3;
 extern lv_obj_t *ui_currentProfileGraph;
+extern lv_obj_t *ui_Container6;
+extern lv_obj_t *ui_Label8;
+extern lv_obj_t *ui_Label9;
 extern lv_obj_t *ui_tempGauge;
 extern lv_obj_t *ui_tempLabel;
 extern lv_obj_t *ui_waterGauge;
 extern lv_obj_t *ui_waterLabel;
+extern lv_obj_t *ui_Container5;
+extern lv_obj_t *ui_weightLabel;
+void ui_event_tareButton( lv_event_t * e);
+extern lv_obj_t *ui_tareButton;
+extern lv_obj_t *ui_Label7;
+extern lv_obj_t *ui_Container4;
+extern lv_obj_t *ui_uptimeLabel;
+extern lv_obj_t *ui_wifiStatusLabel;
 extern lv_obj_t *ui_TabPage2;
 extern lv_obj_t *ui_TabPage3;
 // SCREEN: ui_BrewingScreen

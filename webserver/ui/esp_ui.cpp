@@ -17,9 +17,74 @@ void uiHandleLoop()
   lv_timer_handler(); /* let the GUI do its work */
 }
 
+void getFlowTargets(Phase phase, uint16_t *targets)
+{
+  if (phase.type == PHASE_TYPE::PHASE_TYPE_FLOW)
+  {
+    targets[0] = phase.target.start * 10;
+    targets[1] = phase.target.end > 0 ? phase.target.end * 10 : targets[0];
+  }
+  else
+  {
+    targets[0] = targets[1] = phase.restriction * 10;
+  }
+}
+
+void getPressureTargets(Phase phase, uint16_t *targets)
+{
+  if (phase.type == PHASE_TYPE::PHASE_TYPE_PRESSURE)
+  {
+    targets[0] = phase.target.start * 10;
+    targets[1] = phase.target.end > 0 ? phase.target.end * 10 : targets[0];
+  }
+  else
+  {
+    targets[0] = targets[1] = phase.restriction * 10;
+  }
+}
+
+void drawProfileChart(Profile profile) {
+  log_i("inside");
+  lv_chart_series_t *series = lv_chart_get_series_next(ui_currentProfileGraph, NULL);
+  log_i("next");
+  while (series != NULL) {
+    lv_chart_remove_series(ui_currentProfileGraph, series);
+    series = lv_chart_get_series_next(ui_currentProfileGraph, NULL);
+  }
+  log_i("remove");
+
+  lv_chart_series_t *flowSeries = lv_chart_add_series(ui_currentProfileGraph, lv_palette_main(LV_PALETTE_YELLOW), LV_CHART_AXIS_PRIMARY_Y);
+  lv_chart_series_t *pressureSeries = lv_chart_add_series(ui_currentProfileGraph, lv_palette_main(LV_PALETTE_BLUE_GREY), LV_CHART_AXIS_PRIMARY_Y);
+  lv_chart_set_all_value(ui_currentProfileGraph, pressureSeries, LV_CHART_POINT_NONE);
+  lv_chart_set_all_value(ui_currentProfileGraph, flowSeries, LV_CHART_POINT_NONE);
+
+  log_i("create");
+  int pointsCount = profile.phaseCount() * 2;
+
+  lv_chart_set_point_count(ui_currentProfileGraph, pointsCount);
+  log_i("set count");
+
+  for (int i = 0; i < profile.phases.size(); i++) {
+    Phase phase = profile.phases[i];
+    log_i("t: %.1f, %.1f, r: %.1f", phase.target.start, phase.target.end, phase.restriction);
+    uint16_t flowTargets[2];
+    getFlowTargets(phase, flowTargets);
+    log_i("f vals: %d, %d", flowTargets[0], flowTargets[1]);
+    uint16_t pressureTargets[2];
+    getPressureTargets(phase, pressureTargets);
+    log_i("p vals: %d, %d", pressureTargets[0], pressureTargets[1]);
+    lv_chart_set_next_value(ui_currentProfileGraph, flowSeries, flowTargets[0]);
+    lv_chart_set_next_value(ui_currentProfileGraph, flowSeries, flowTargets[1]);
+    lv_chart_set_next_value(ui_currentProfileGraph, pressureSeries, pressureTargets[0]);
+    lv_chart_set_next_value(ui_currentProfileGraph, pressureSeries, pressureTargets[1]);
+  }
+  log_i("draw");
+}
+
 void uiHandleCurrentProfileChange(NamedProfile profile)
 {
   lv_label_set_text(ui_profileNameLabel, profile.name);
+  drawProfileChart(profile.profile);
 }
 
 void uiHandleStateSnapshot(const SensorStateSnapshot &state)
@@ -32,14 +97,18 @@ void uiHandleStateSnapshot(const SensorStateSnapshot &state)
   sprintf(wtrLvlChar, "%d%%", state.waterLvl);
   lv_label_set_text(ui_waterLabel, wtrLvlChar);
   lv_arc_set_value(ui_waterGauge, state.waterLvl);
+  char weightChar[5];
+  sprintf(weightChar, "%.1fg", state.weight);
+  lv_label_set_text(ui_weightLabel, weightChar);
 }
 
 void uiHandleShotSnapshot(const ShotSnapshot &snapshot)
 {
 }
 
-void uiSetActiveProfileName(const char *name)
+void uiGoToHomeScreen()
 {
+  lv_scr_load(ui_HomeScreen);
 }
 
 void sendFlushAction(lv_event_t *e)
@@ -129,4 +198,9 @@ void brewingScreenAppear(lv_event_t *e)
 
   lv_chart_set_point_count(ui_BrewGraph, 450);
   xTaskCreateUniversal(drawGraphTask, "drawGraph", configMINIMAL_STACK_SIZE + 2048, NULL, PRIORITY_BLE_SCALES_MAINTAINANCE, NULL, CORE_BLE_SCALES_MAINTAINANCE);
+}
+
+void tareButtonTapped(lv_event_t *e)
+{
+  log_d("tare");
 }

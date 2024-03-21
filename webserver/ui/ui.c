@@ -9,6 +9,13 @@
 ///////////////////// VARIABLES ////////////////////
 
 
+// SCREEN: ui_Splash
+void ui_Splash_screen_init(void);
+lv_obj_t *ui_Splash;
+lv_obj_t *ui_Spinner2;
+lv_obj_t *ui_Label5;
+
+
 // SCREEN: ui_HomeScreen
 void ui_HomeScreen_screen_init(void);
 lv_obj_t *ui_HomeScreen;
@@ -18,18 +25,31 @@ lv_obj_t *ui_Container1;
 void ui_event_flushButton( lv_event_t * e);
 lv_obj_t *ui_flushButton;
 lv_obj_t *ui_Label1;
-void ui_event_Button1( lv_event_t * e);
-lv_obj_t *ui_Button1;
+void ui_event_cleaningButton( lv_event_t * e);
+lv_obj_t *ui_cleaningButton;
 lv_obj_t *ui_Label2;
+lv_obj_t *ui_Button1;
+lv_obj_t *ui_manualBrewLabel;
 lv_obj_t *ui_Container2;
 lv_obj_t *ui_Label4;
 lv_obj_t *ui_profileNameLabel;
 lv_obj_t *ui_Container3;
 lv_obj_t *ui_currentProfileGraph;
+lv_obj_t *ui_Container6;
+lv_obj_t *ui_Label8;
+lv_obj_t *ui_Label9;
 lv_obj_t *ui_tempGauge;
 lv_obj_t *ui_tempLabel;
 lv_obj_t *ui_waterGauge;
 lv_obj_t *ui_waterLabel;
+lv_obj_t *ui_Container5;
+lv_obj_t *ui_weightLabel;
+void ui_event_tareButton( lv_event_t * e);
+lv_obj_t *ui_tareButton;
+lv_obj_t *ui_Label7;
+lv_obj_t *ui_Container4;
+lv_obj_t *ui_uptimeLabel;
+lv_obj_t *ui_wifiStatusLabel;
 lv_obj_t *ui_TabPage2;
 lv_obj_t *ui_TabPage3;
 
@@ -79,10 +99,16 @@ if ( event_code == LV_EVENT_CLICKED) {
       sendFlushAction( e );
 }
 }
-void ui_event_Button1( lv_event_t * e) {
+void ui_event_cleaningButton( lv_event_t * e) {
     lv_event_code_t event_code = lv_event_get_code(e);lv_obj_t * target = lv_event_get_target(e);
 if ( event_code == LV_EVENT_CLICKED) {
       _ui_screen_change( &ui_BrewingScreen, LV_SCR_LOAD_ANIM_FADE_ON, 200, 0, &ui_BrewingScreen_screen_init);
+}
+}
+void ui_event_tareButton( lv_event_t * e) {
+    lv_event_code_t event_code = lv_event_get_code(e);lv_obj_t * target = lv_event_get_target(e);
+if ( event_code == LV_EVENT_RELEASED) {
+      tareButtonTapped( e );
 }
 }
 void ui_event_BrewingScreen( lv_event_t * e) {
@@ -105,9 +131,10 @@ void ui_init( void )
 lv_disp_t *dispp = lv_disp_get_default();
 lv_theme_t *theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), false, LV_FONT_DEFAULT);
 lv_disp_set_theme(dispp, theme);
+ui_Splash_screen_init();
 ui_HomeScreen_screen_init();
 ui_BrewingScreen_screen_init();
 ui_EditProfileScreen_screen_init();
 ui____initial_actions0 = lv_obj_create(NULL);
-lv_disp_load_scr( ui_HomeScreen);
+lv_disp_load_scr( ui_Splash);
 }

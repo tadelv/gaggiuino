@@ -160,24 +160,24 @@ Profile deserializeProfileJSON(JsonVariant body)
     Phase phase;
     JsonObject jsonPhaseObj = jsonPhase.as<JsonObject>();
     phase.type = jsonPhaseObj["type"].as<String>() == "FLOW" ? PHASE_TYPE::PHASE_TYPE_FLOW : PHASE_TYPE::PHASE_TYPE_PRESSURE;
-    phase.restriction = jsonPhaseObj["restriction"].as<float>(); // May need to adjust based on the actual data type
+    phase.restriction = jsonPhaseObj["restriction"] | -1; // May need to adjust based on the actual data type
     JsonObject target = jsonPhaseObj["target"];
-    phase.target.start = target["start"].as<float>();
-    phase.target.end = target["end"].as<float>();
+    phase.target.start = target["start"] | -1;
+    phase.target.end = target["end"] | -1;
     phase.target.curve = stringToCurve(target["curve"].as<String>().c_str());
-    phase.target.time = target["time"].as<float>();
+    phase.target.time = target["time"] | 5000; // FIXME: what's the right default value
     JsonObject stopConditions = jsonPhaseObj["stopConditions"];
-    phase.stopConditions.time = stopConditions["time"].as<int>();                        // May need to adjust based on the actual data type
-    phase.stopConditions.weight = stopConditions["weight"].as<float>();                  // May need to adjust based on the actual data type
-    phase.stopConditions.waterPumpedInPhase = stopConditions["waterPumped"].as<float>(); // May need to adjust based on the actual data type
+    phase.stopConditions.time = stopConditions["time"] | -1;                        // May need to adjust based on the actual data type
+    phase.stopConditions.weight = stopConditions["weight"] | -1;                  // May need to adjust based on the actual data type
+    phase.stopConditions.waterPumpedInPhase = stopConditions["waterPumped"] | -1; // May need to adjust based on the actual data type
     // Deserialize other fields if needed
     newDefaultProfile.phases.push_back(phase);
   }
 
   JsonObject stopConditions = body["stopConditions"];
-  newDefaultProfile.globalStopConditions.time = stopConditions["time"];
-  newDefaultProfile.globalStopConditions.weight = stopConditions["weight"];
-  newDefaultProfile.globalStopConditions.waterPumped = stopConditions["waterPumped"];
+  newDefaultProfile.globalStopConditions.time = stopConditions["time"] | -1;
+  newDefaultProfile.globalStopConditions.weight = stopConditions["weight"] | -1;
+  newDefaultProfile.globalStopConditions.waterPumped = stopConditions["waterPumped"] | -1;
 
   return newDefaultProfile;
 }

@@ -321,6 +321,7 @@ export default function Profiles() {
           setDefault={(id) => {
             console.log("sending profile to mcu");
             setDefaultProfile(profiles[id])
+            updateProfile(JSON.stringify(profiles[id].profile))
           }
         }
         handleDelete={(id) => {

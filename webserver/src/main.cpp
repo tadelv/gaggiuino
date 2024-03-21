@@ -11,21 +11,33 @@
 
 void handleWsSetDefaultProfile(NamedProfile profile);
 
+void loadEverything(void *params) {
+  wifiSetup();
+  webServerSetup();
+  auto storedProfiles = fsGetProfiles();
+  if (!storedProfiles.empty())
+  {
+    NamedProfile profile = storedProfiles[0];
+    handleWsSetDefaultProfile(profile);
+  }
+
+  vTaskDelay(2000 / portTICK_PERIOD_MS);
+
+  uiGoToHomeScreen();
+
+  vTaskDelete(NULL);
+}
+
 void setup()
 {
   LOG_INIT();
   REMOTE_LOG_INIT([](std::string message) {wsSendLog(message);});
   initFS();
   stmCommsInit(Serial1);
-  wifiSetup();
-  webServerSetup();
+  
   uiInit();
 
-  auto storedProfiles = fsGetProfiles();
-  if (!storedProfiles.empty()) {
-    NamedProfile profile = storedProfiles[0];
-    handleWsSetDefaultProfile(profile);
-  }
+  xTaskCreateUniversal(loadEverything, "preLoad", configMINIMAL_STACK_SIZE + 2048, NULL, PRIORITY_BLE_SCALES_MAINTAINANCE, NULL, CORE_BLE_SCALES_MAINTAINANCE);
 }
 
 void loop() {
