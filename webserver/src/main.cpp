@@ -8,8 +8,11 @@
 #include "scales/ble_scales.h"
 #include "./log/log.h"
 #include "ui/esp_ui.h"
+#include <mutex>
 
 void handleWsSetDefaultProfile(NamedProfile profile);
+
+std::mutex lvgl_mutex = std::mutex();
 
 void loadEverything(void *params) {
   wifiSetup();
@@ -21,7 +24,7 @@ void loadEverything(void *params) {
     handleWsSetDefaultProfile(profile);
   }
 
-  vTaskDelay(2000 / portTICK_PERIOD_MS);
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
 
   uiGoToHomeScreen();
 
@@ -34,20 +37,26 @@ void setup()
   REMOTE_LOG_INIT([](std::string message) {wsSendLog(message);});
   initFS();
   stmCommsInit(Serial1);
-  
-  uiInit();
 
+  lvgl_mutex.lock();
+  uiInit();
+  lvgl_mutex.unlock();
   xTaskCreateUniversal(loadEverything, "preLoad", configMINIMAL_STACK_SIZE + 2048, NULL, PRIORITY_BLE_SCALES_MAINTAINANCE, NULL, CORE_BLE_SCALES_MAINTAINANCE);
 }
 
+static bool isBrewing = false;
+
 void loop() {
   // vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
+  lvgl_mutex.lock();
   uiHandleLoop();
+  lvgl_mutex.unlock();
   if (millis() % 1000 == 0) {
-    SensorStateSnapshot sensorData;
+    SensorStateSnapshot sensorData {0};
     sensorData.temperature = random(90, 100);
     sensorData.waterLvl = 33; //random(15, 85);
     sensorData.weight = 0;
+    sensorData.brewActive = isBrewing;
     onSensorStateSnapshotReceived(sensorData);
   }
 }
@@ -57,12 +66,16 @@ void loop() {
 // ------------------------------------------------------------------------
 void onSensorStateSnapshotReceived(SensorStateSnapshot& sensorData) {
   wsSendSensorStateSnapshotToClients(sensorData);
+  lvgl_mutex.lock();
   uiHandleStateSnapshot(sensorData);
+  lvgl_mutex.unlock();
 }
 
 void onShotSnapshotReceived(ShotSnapshot& shotData) {
   wsSendShotSnapshotToClients(shotData);
+  lvgl_mutex.lock();
   uiHandleShotSnapshot(shotData);
+  lvgl_mutex.unlock();
 }
 
 void stmResponseReceived(McuCommsResponse response) {
@@ -72,5 +85,11 @@ void stmResponseReceived(McuCommsResponse response) {
 void handleWsSetDefaultProfile(NamedProfile profile) {
   LOG_INFO("Setting default profile to: %s", profile.name);
   stmCommsSendProfile(profile.profile);
+  lvgl_mutex.lock();
   uiHandleCurrentProfileChange(profile);
+  lvgl_mutex.unlock();
+}
+
+void toggleBrewState() {
+  isBrewing = !isBrewing;
 }

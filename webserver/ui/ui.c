@@ -102,7 +102,7 @@ if ( event_code == LV_EVENT_CLICKED) {
 void ui_event_cleaningButton( lv_event_t * e) {
     lv_event_code_t event_code = lv_event_get_code(e);lv_obj_t * target = lv_event_get_target(e);
 if ( event_code == LV_EVENT_CLICKED) {
-      _ui_screen_change( &ui_BrewingScreen, LV_SCR_LOAD_ANIM_FADE_ON, 200, 0, &ui_BrewingScreen_screen_init);
+      toggleBrewState( e );
 }
 }
 void ui_event_tareButton( lv_event_t * e) {
@@ -120,7 +120,7 @@ if ( event_code == LV_EVENT_SCREEN_LOADED) {
 void ui_event_closeBrewScreenButton( lv_event_t * e) {
     lv_event_code_t event_code = lv_event_get_code(e);lv_obj_t * target = lv_event_get_target(e);
 if ( event_code == LV_EVENT_CLICKED) {
-      _ui_screen_change( &ui_HomeScreen, LV_SCR_LOAD_ANIM_FADE_ON, 200, 0, &ui_HomeScreen_screen_init);
+      brewGraphCloseButtonTapped( e );
 }
 }
 

@@ -4,6 +4,10 @@
 #include "ui/ui.h"
 #include "src/server/websocket/websocket.h"
 
+
+void resetBrewGraph();
+void updateBrewGraphWithSnapshot(const ShotSnapshot &snapshot);
+
 void uiInit()
 {
   smartdisplay_init();
@@ -44,41 +48,32 @@ void getPressureTargets(Phase phase, uint16_t *targets)
 }
 
 void drawProfileChart(Profile profile) {
-  log_i("inside");
   lv_chart_series_t *series = lv_chart_get_series_next(ui_currentProfileGraph, NULL);
-  log_i("next");
   while (series != NULL) {
     lv_chart_remove_series(ui_currentProfileGraph, series);
     series = lv_chart_get_series_next(ui_currentProfileGraph, NULL);
   }
-  log_i("remove");
 
   lv_chart_series_t *flowSeries = lv_chart_add_series(ui_currentProfileGraph, lv_palette_main(LV_PALETTE_YELLOW), LV_CHART_AXIS_PRIMARY_Y);
   lv_chart_series_t *pressureSeries = lv_chart_add_series(ui_currentProfileGraph, lv_palette_main(LV_PALETTE_BLUE_GREY), LV_CHART_AXIS_PRIMARY_Y);
   lv_chart_set_all_value(ui_currentProfileGraph, pressureSeries, LV_CHART_POINT_NONE);
   lv_chart_set_all_value(ui_currentProfileGraph, flowSeries, LV_CHART_POINT_NONE);
 
-  log_i("create");
   int pointsCount = profile.phaseCount() * 2;
 
   lv_chart_set_point_count(ui_currentProfileGraph, pointsCount);
-  log_i("set count");
 
   for (int i = 0; i < profile.phases.size(); i++) {
     Phase phase = profile.phases[i];
-    log_i("t: %.1f, %.1f, r: %.1f", phase.target.start, phase.target.end, phase.restriction);
     uint16_t flowTargets[2];
     getFlowTargets(phase, flowTargets);
-    log_i("f vals: %d, %d", flowTargets[0], flowTargets[1]);
     uint16_t pressureTargets[2];
     getPressureTargets(phase, pressureTargets);
-    log_i("p vals: %d, %d", pressureTargets[0], pressureTargets[1]);
     lv_chart_set_next_value(ui_currentProfileGraph, flowSeries, flowTargets[0]);
     lv_chart_set_next_value(ui_currentProfileGraph, flowSeries, flowTargets[1]);
     lv_chart_set_next_value(ui_currentProfileGraph, pressureSeries, pressureTargets[0]);
     lv_chart_set_next_value(ui_currentProfileGraph, pressureSeries, pressureTargets[1]);
   }
-  log_i("draw");
 }
 
 void uiHandleCurrentProfileChange(NamedProfile profile)
@@ -89,21 +84,36 @@ void uiHandleCurrentProfileChange(NamedProfile profile)
 
 void uiHandleStateSnapshot(const SensorStateSnapshot &state)
 {
-  char tempChar[4];
-  sprintf(tempChar, "%.1f", state.temperature);
+  if (lv_scr_act() == ui_BrewingScreen)
+  {
+    return;
+  }
+  if (state.brewActive) {
+    lv_scr_load(ui_BrewingScreen);
+    resetBrewGraph();
+    return;
+  }
+
+  char tempChar[6];
+  snprintf(tempChar, 6, "%.1f", state.temperature);
   lv_label_set_text(ui_tempLabel, tempChar);
   lv_arc_set_value(ui_tempGauge, (int)state.temperature);
   char wtrLvlChar[5];
-  sprintf(wtrLvlChar, "%d%%", state.waterLvl);
+  snprintf(wtrLvlChar, 5, "%d%%", state.waterLvl);
   lv_label_set_text(ui_waterLabel, wtrLvlChar);
   lv_arc_set_value(ui_waterGauge, state.waterLvl);
-  char weightChar[5];
-  sprintf(weightChar, "%.1fg", state.weight);
+  char weightChar[7];
+  snprintf(weightChar, 7, "%.1fg", state.weight);
   lv_label_set_text(ui_weightLabel, weightChar);
 }
 
 void uiHandleShotSnapshot(const ShotSnapshot &snapshot)
 {
+  if (lv_scr_act() != ui_BrewingScreen) {
+    log_w("received shot snapshot while not in brewing screen");
+    return; // FIXME: what should happen here?
+  }
+  updateBrewGraphWithSnapshot(snapshot);
 }
 
 void uiGoToHomeScreen()
@@ -128,8 +138,81 @@ void sendFlushAction(lv_event_t *e)
   wsSendSensorStateSnapshotToClients(snapshot);
 }
 
+void tareButtonTapped(lv_event_t *e)
+{
+  log_d("tare");
+}
+
+// Brew Graph Drawing
+
 static lv_chart_series_t *pressureSeries;
 static lv_chart_series_t *tempSeries;
+static lv_chart_series_t *weightSeries;
+static lv_chart_series_t *weightPerSecSeries;
+static lv_chart_series_t *flowSeries;
+static unsigned long brewGraphPointCount;
+
+void resetBrewGraph() {
+  lv_chart_series_t *series = lv_chart_get_series_next(ui_BrewGraph, NULL);
+  while (series != NULL)
+  {
+    lv_chart_remove_series(ui_BrewGraph, series);
+    series = lv_chart_get_series_next(ui_BrewGraph, NULL);
+  }
+
+  lv_chart_set_update_mode(ui_BrewGraph, LV_CHART_UPDATE_MODE_CIRCULAR);
+  lv_chart_set_type(ui_BrewGraph, LV_CHART_TYPE_LINE);
+
+  pressureSeries = lv_chart_add_series(ui_BrewGraph, lv_palette_main(LV_PALETTE_BLUE_GREY), LV_CHART_AXIS_PRIMARY_Y);
+  tempSeries = lv_chart_add_series(ui_BrewGraph, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_SECONDARY_Y);
+  weightSeries = lv_chart_add_series(ui_BrewGraph, lv_palette_main(LV_PALETTE_LIGHT_BLUE), LV_CHART_AXIS_SECONDARY_Y);
+  weightPerSecSeries = lv_chart_add_series(ui_BrewGraph, lv_palette_main(LV_PALETTE_PURPLE), LV_CHART_AXIS_PRIMARY_Y);
+  flowSeries = lv_chart_add_series(ui_BrewGraph, lv_palette_main(LV_PALETTE_YELLOW), LV_CHART_AXIS_PRIMARY_Y);
+  lv_chart_set_all_value(ui_BrewGraph, pressureSeries, LV_CHART_POINT_NONE);
+  lv_chart_set_all_value(ui_BrewGraph, tempSeries, LV_CHART_POINT_NONE);
+  lv_chart_set_all_value(ui_BrewGraph, weightSeries, LV_CHART_POINT_NONE);
+  lv_chart_set_all_value(ui_BrewGraph, weightPerSecSeries, LV_CHART_POINT_NONE);
+  lv_chart_set_all_value(ui_BrewGraph, flowSeries, LV_CHART_POINT_NONE);
+
+  brewGraphPointCount = 450;
+  lv_chart_set_point_count(ui_BrewGraph, brewGraphPointCount);
+}
+
+void updateBrewGraphWithSnapshot(const ShotSnapshot &snapshot) {
+  // brewGraphPointCount += 1;
+  // lv_chart_set_point_count(ui_BrewGraph, brewGraphPointCount);
+  lv_chart_set_next_value(ui_BrewGraph, pressureSeries, snapshot.pressure * 10);
+  lv_chart_set_next_value(ui_BrewGraph, tempSeries, snapshot.temperature * 10);
+  lv_chart_set_next_value(ui_BrewGraph, weightSeries, snapshot.shotWeight * 10);
+  lv_chart_set_next_value(ui_BrewGraph, weightPerSecSeries, snapshot.weightFlow * 10);
+  lv_chart_set_next_value(ui_BrewGraph, flowSeries, snapshot.pumpFlow * 10);
+
+  uint32_t elapsed = snapshot.timeInShot;
+  uint32_t secs = (elapsed / 1000u) % 60;
+  uint32_t mins = (secs / 60u);
+  char time[6];
+  snprintf(time, 6, "%02u:%02u", mins, secs);
+  lv_label_set_text(ui_timeLabel, time);
+
+  char pressure[5];
+  snprintf(pressure, 5, "%.1f", snapshot.pressure);
+  lv_label_set_text(ui_pValueLabel, pressure);
+  char flow[5];
+  snprintf(flow, 5, "%.1f", snapshot.pumpFlow);
+  lv_label_set_text(ui_fValueLabel, flow);
+  char weight[7];
+  snprintf(weight, 7, "%.1fg", snapshot.shotWeight);
+  lv_label_set_text(ui_wValueLabel, weight);
+  char weightPerSec[6];
+  snprintf(weightPerSec, 6, "%.1f", snapshot.weightFlow);
+  lv_label_set_text(ui_wPsValueLabel, weightPerSec);
+  char temperature[6];
+  snprintf(temperature, 6, "%.1f", snapshot.temperature);
+  lv_label_set_text(ui_tValueLabel, temperature);
+}
+
+void onShotSnapshotReceived(ShotSnapshot &shotData);
+void toggleBrewState();
 
 void drawGraphTask(void *params)
 {
@@ -137,6 +220,7 @@ void drawGraphTask(void *params)
   auto screen = lv_scr_act();
   uint32_t pressVal = 0;
   uint32_t tempVal = 900;
+  float weight = 0;
   while (screen == ui_BrewingScreen)
   {
     if (pressVal < 60)
@@ -144,9 +228,9 @@ void drawGraphTask(void *params)
       pressVal += 1;
     }
     tempVal += lv_rand(-1, 1);
-    lv_chart_set_next_value(ui_BrewGraph, pressureSeries, pressVal);
-    lv_chart_set_next_value(ui_BrewGraph, tempSeries, tempVal);
-    uint16_t count = lv_chart_get_point_count(ui_BrewGraph);
+    // lv_chart_set_next_value(ui_BrewGraph, pressureSeries, pressVal);
+    // lv_chart_set_next_value(ui_BrewGraph, tempSeries, tempVal);
+    // uint16_t count = lv_chart_get_point_count(ui_BrewGraph);
     // if (count > 100) { // figure out how to scale horizontally
     // lv_chart_set_zoom_x(ui_BrewGraph, 255 / count * 255);
     // lv_chart_set_point_count(ui_BrewGraph, count);
@@ -154,20 +238,30 @@ void drawGraphTask(void *params)
     // lv_chart_refresh(ui_BrewGraph);
 
     uint32_t elapsed = millis() - startTime;
-    uint32_t secs = elapsed / 1000u;
-    uint32_t mins = secs / 60u;
-    char time[6];
-    snprintf(time, 6, "%02u:%02u", mins, secs);
-    lv_label_set_text(ui_timeLabel, time);
+
+    if (elapsed > 50000) {
+      toggleBrewState();
+      break;
+    }
+    // uint32_t secs = elapsed / 1000u;
+    // uint32_t mins = (secs / 60u) % 60;
+    // char time[6];
+    // snprintf(time, 6, "%02u:%02u", mins, secs);
+    // lv_label_set_text(ui_timeLabel, time);
 
     ShotSnapshot snapshot = {0};
     snapshot.pressure = pressVal / (float)10;
     snapshot.temperature = tempVal / (float)10;
     snapshot.pumpFlow = 3.2;
+    snapshot.weightFlow = 1.5;
+    if (weight < 90) {
+      weight += lv_rand(0, 2) / 10.f;
+    }
+    snapshot.shotWeight = weight;
     snapshot.timeInShot = elapsed;
-    wsSendShotSnapshotToClients(snapshot);
+    onShotSnapshotReceived(snapshot);
 
-    vTaskDelay(200 / portTICK_PERIOD_MS);
+    vTaskDelay(150 / portTICK_PERIOD_MS);
     screen = lv_scr_act();
   }
   log_i("done with graph");
@@ -176,31 +270,35 @@ void drawGraphTask(void *params)
 
 void brewingScreenAppear(lv_event_t *e)
 {
-  lv_chart_set_update_mode(ui_BrewGraph, LV_CHART_UPDATE_MODE_CIRCULAR);
-  lv_chart_set_type(ui_BrewGraph, LV_CHART_TYPE_LINE);
+  log_i("brew screen appear");
+  // lv_chart_set_update_mode(ui_BrewGraph, LV_CHART_UPDATE_MODE_CIRCULAR);
+  // lv_chart_set_type(ui_BrewGraph, LV_CHART_TYPE_LINE);
 
-  lv_chart_series_t *ser = NULL;
-  do
-  {
-    ser = lv_chart_get_series_next(ui_BrewGraph, NULL);
-    if (ser != NULL)
-    {
-      lv_chart_remove_series(ui_BrewGraph, ser);
-    }
-  } while (ser != NULL);
+  // lv_chart_series_t *ser = NULL;
+  // do
+  // {
+  //   ser = lv_chart_get_series_next(ui_BrewGraph, NULL);
+  //   if (ser != NULL)
+  //   {
+  //     lv_chart_remove_series(ui_BrewGraph, ser);
+  //   }
+  // } while (ser != NULL);
 
-  pressureSeries = lv_chart_add_series(ui_BrewGraph, lv_palette_main(LV_PALETTE_BLUE_GREY), LV_CHART_AXIS_PRIMARY_Y);
-  tempSeries = lv_chart_add_series(ui_BrewGraph, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_SECONDARY_Y);
-  lv_chart_set_all_value(ui_BrewGraph, pressureSeries, LV_CHART_POINT_NONE);
-  lv_chart_set_all_value(ui_BrewGraph, tempSeries, LV_CHART_POINT_NONE);
+  // pressureSeries = lv_chart_add_series(ui_BrewGraph, lv_palette_main(LV_PALETTE_BLUE_GREY), LV_CHART_AXIS_PRIMARY_Y);
+  // tempSeries = lv_chart_add_series(ui_BrewGraph, lv_palette_main(LV_PALETTE_RED), LV_CHART_AXIS_SECONDARY_Y);
+  // lv_chart_set_all_value(ui_BrewGraph, pressureSeries, LV_CHART_POINT_NONE);
+  // lv_chart_set_all_value(ui_BrewGraph, tempSeries, LV_CHART_POINT_NONE);
   // lv_chart_set_x_start_point(ui_BrewGraph, pressureSeries, 0);
   // lv_chart_set_x_start_point(ui_BrewGraph, tempSeries, 0);
 
-  lv_chart_set_point_count(ui_BrewGraph, 450);
+  // lv_chart_set_point_count(ui_BrewGraph, 450);
   xTaskCreateUniversal(drawGraphTask, "drawGraph", configMINIMAL_STACK_SIZE + 2048, NULL, PRIORITY_BLE_SCALES_MAINTAINANCE, NULL, CORE_BLE_SCALES_MAINTAINANCE);
 }
 
-void tareButtonTapped(lv_event_t *e)
-{
-  log_d("tare");
+void toggleBrewState(lv_event_t *e) {
+  toggleBrewState();
+}
+void brewGraphCloseButtonTapped(lv_event_t *e) {
+  toggleBrewState();
+  lv_scr_load(ui_HomeScreen);
 }

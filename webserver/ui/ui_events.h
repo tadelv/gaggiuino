@@ -11,8 +11,10 @@ extern "C" {
 #endif
 
 void sendFlushAction(lv_event_t * e);
+void toggleBrewState(lv_event_t * e);
 void tareButtonTapped(lv_event_t * e);
 void brewingScreenAppear(lv_event_t * e);
+void brewGraphCloseButtonTapped(lv_event_t * e);
 
 #ifdef __cplusplus
 } /*extern "C"*/
