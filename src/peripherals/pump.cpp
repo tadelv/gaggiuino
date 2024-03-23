@@ -6,6 +6,8 @@
 #include "internal_watchdog.h"
 #include "log.h"
 #include "PIDController.h"
+#undef round
+#include "math.h"
 
 PSM pump(zcPin, dimmerPin, PUMP_RANGE, ZC_MODE, 1, 6);
 PIDController controller(
@@ -73,7 +75,7 @@ inline float getPumpPct(const float targetPressure, const float flowRestriction,
 // - pressure direction
 void setPumpPressure(const float targetPressure, const float flowRestriction, const SensorState& currentState) {
   float pumpPct = getPumpPct(targetPressure, flowRestriction, currentState);
-  setPumpToRawValue((uint8_t)(pumpPct * PUMP_RANGE));
+  setPumpToPercentage(pumpPct);
 }
 
 void setPumpOff(void) {
@@ -84,8 +86,8 @@ void setPumpFullOn(void) {
   pump.set(PUMP_RANGE);
 }
 
-void setPumpToRawValue(const uint8_t val) {
-  pump.set(val);
+void setPumpToPercentage(float pct) {
+    pump.set((uint8_t) std::round(pct * PUMP_RANGE));
 }
 
 void pumpStopAfter(const uint8_t val) {
@@ -120,6 +122,7 @@ void pumpPhaseShift(void) {
 // plotted: https://www.desmos.com/calculator/eqynzclagu
 float getPumpFlowPerClick(const float pressure) {
   float fpc = 0.f;
+  if (livepressure <= 0.f ) livepressure = 0.1f;
   const int degree = 6; //pressureInefficiencyCoefficient.size() - 1;
 
   for (int i = 0; i <= degree; ++i) {
@@ -151,7 +154,7 @@ void setPumpFlow(const float targetFlow, const float pressureRestriction, const 
   }
   else {
     float pumpPct = getClicksPerSecondForFlow(targetFlow, currentState.smoothedPressure) / (float)maxPumpClicksPerSecond;
-    setPumpToRawValue(pumpPct * PUMP_RANGE);
+    setPumpToPercentage(pumpPct);
   }
 }
 

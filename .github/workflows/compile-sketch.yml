@@ -74,8 +74,12 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
       - name: Run tests
-        run: pio test -e test
-  
+        run: |
+          ~/.platformio/penv/bin/platformio test -e test || true
+      - name: Run tests
+        run: |
+          ~/.platformio/penv/bin/platformio test -e test
+
   static-analysis:
     name: Static Analysis
     runs-on: ubuntu-latest
@@ -90,4 +94,24 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
       - name: Run static analysis on ${{ matrix.environment }}
-        run: pio check -e ${{ matrix.environment }} --fail-on-defect medium --fail-on-defect high
+        run: |
+          ~/.platformio/penv/bin/platformio check -e ${{ matrix.environment }} --fail-on-defect medium --fail-on-defect high
+
+  web-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: webserver/web-interface/package-lock.json
+      - run: npm ci
+        working-directory: webserver/web-interface/
+      - run: npm run build --if-present
+        working-directory: webserver/web-interface/
+      - run: npm run lint
+        working-directory: webserver/web-interface/
+        env:
+          CI: true

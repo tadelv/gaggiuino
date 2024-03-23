@@ -5,24 +5,19 @@
 #include "server/server_setup.h"
 #include "wifi/wifi_setup.h"
 #include "server/websocket/websocket.h"
-#include "scales/ble_scales.h"
+// #include "scales/ble_scales.h"
+#include "persistence/persistence.h"
+#include "state/state.h"
 #include "./log/log.h"
 #include "ui/esp_ui.h"
 #include <mutex>
 
-void handleWsSetDefaultProfile(NamedProfile profile);
-
 std::mutex lvgl_mutex = std::mutex();
 
+/*
 void loadEverything(void *params) {
   wifiSetup();
   webServerSetup();
-  auto storedProfiles = fsGetProfiles();
-  if (!storedProfiles.empty())
-  {
-    NamedProfile profile = storedProfiles[0];
-    handleWsSetDefaultProfile(profile);
-  }
 
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 
@@ -30,23 +25,36 @@ void loadEverything(void *params) {
 
   vTaskDelete(NULL);
 }
+*/
 
 void setup()
 {
   LOG_INIT();
   REMOTE_LOG_INIT([](std::string message) {wsSendLog(message);});
   initFS();
+  persistence::init();
+  state::init();
   stmCommsInit(Serial1);
+  /*
+====== HEAD
 
   lvgl_mutex.lock();
   uiInit();
   lvgl_mutex.unlock();
   xTaskCreateUniversal(loadEverything, "preLoad", configMINIMAL_STACK_SIZE + 2048, NULL, PRIORITY_BLE_SCALES_MAINTAINANCE, NULL, CORE_BLE_SCALES_MAINTAINANCE);
+=======
+*/
+wifiSetup();
+webServerSetup();
+// blescales::init();
+vTaskDelete(NULL); // Delete own task by passing NULL
 }
 
 static bool isBrewing = false;
 
 void loop() {
+  /*
+====== HEAD
   // vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
   lvgl_mutex.lock();
   uiHandleLoop();
@@ -59,37 +67,91 @@ void loop() {
     sensorData.brewActive = isBrewing;
     onSensorStateSnapshotReceived(sensorData);
   }
+=======
+*/
+  vTaskDelete(NULL);     //Delete own task by passing NULL
 }
 
 // ------------------------------------------------------------------------
-// ---------------- Handle STM communication messages ---------------------
+// ----------------------- Handle STM callbacks ---------------------------
 // ------------------------------------------------------------------------
-void onSensorStateSnapshotReceived(SensorStateSnapshot& sensorData) {
+void onSensorStateSnapshotReceived(const SensorStateSnapshot& sensorData) {
   wsSendSensorStateSnapshotToClients(sensorData);
-  lvgl_mutex.lock();
-  uiHandleStateSnapshot(sensorData);
-  lvgl_mutex.unlock();
+  // lvgl_mutex.lock();
+  // uiHandleStateSnapshot(sensorData);
+  // lvgl_mutex.unlock();
 }
-
-void onShotSnapshotReceived(ShotSnapshot& shotData) {
+void onShotSnapshotReceived(const ShotSnapshot& shotData) {
   wsSendShotSnapshotToClients(shotData);
-  lvgl_mutex.lock();
-  uiHandleShotSnapshot(shotData);
-  lvgl_mutex.unlock();
+  // lvgl_mutex.lock();
+  // uiHandleShotSnapshot(shotData);
+  // lvgl_mutex.unlock();
 }
 
-void stmResponseReceived(McuCommsResponse response) {
-  LOG_INFO("received response %s for %d", response.result == McuCommsResponseResult::MCUC_OK ? "ok" : "error", response.type);
+void onSystemStateReceived(const SystemState& systemState) {
+  state::updateSystemState(systemState);
+}
+void onScalesTareReceived() {
+  LOG_INFO("STM sent tare command");
+  blescales::tare();
+}
+void onGaggiaSettingsRequested() {
+  LOG_INFO("STM request active settings");
+  stmCommsSendGaggiaSettings(state::getSettings());
+}
+void onProfileRequested() {
+  LOG_INFO("STM request active profile");
+  stmCommsSendProfile(state::getActiveProfile());
+}
+void onNotification(const Notification& notification) {
+  wsSendNotification(notification);
+}
+void onDescalingProgressReceived(const DescalingProgress& progress) {
+  wsSendDescalingProgress(progress);
 }
 
-void handleWsSetDefaultProfile(NamedProfile profile) {
-  LOG_INFO("Setting default profile to: %s", profile.name);
-  stmCommsSendProfile(profile.profile);
-  lvgl_mutex.lock();
-  uiHandleCurrentProfileChange(profile);
-  lvgl_mutex.unlock();
+// ------------------------------------------------------------------------
+// ------------------ Handle state updated callbacks ----------------------
+// ------------------------------------------------------------------------
+void state::onActiveProfileUpdated(const Profile& profile) {
+  stmCommsSendProfile(state::getActiveProfile());
+  wsSendActiveProfileUpdated();
+}
+void state::onAllSettingsUpdated(const GaggiaSettings& settings) {
+  stmCommsSendGaggiaSettings(state::getSettings());
+  wsSendSettingsUpdated();
+}
+void state::onBrewSettingsUpdated(const BrewSettings& settings) {
+  stmCommsSendBrewSettings(settings);
+}
+void state::onBoilerSettingsUpdated(const BoilerSettings& settings) {
+  stmCommsSendBoilerSettings(settings);
+}
+void state::onLedSettingsUpdated(const LedSettings& settings) {
+  stmCommsSendLedSettings(settings);
+}
+void state::onSystemSettingsUpdated(const SystemSettings& settings) {
+  stmCommsSendSystemSettings(settings);
+}
+void state::onScalesSettingsUpdated(const ScalesSettings& settings) {
+  stmCommsSendScalesSettings(settings);
+}
+void state::onSystemStateUpdated(const SystemState& systemState) {
+  wsSendSystemStateToClients(systemState);
+}
+void state::onUpdateSystemStateCommandSubmitted(const UpdateSystemStateComand& command) {
+  stmCommsSendUpdateSystemState(command);
+}
+void state::onConnectedBleScalesUpdated(const blescales::Scales& scales) {
+  if (scales.address.length() == 0) {
+    stmCommsSendScaleDisconnected();
+  }
+  wsSendConnectedBleScalesUpdated(scales);
 }
 
-void toggleBrewState() {
-  isBrewing = !isBrewing;
+// ------------------------------------------------------------------------
+// -------------------- Handle ble scales callbacks -----------------------
+// ------------------------------------------------------------------------
+void blescales::onWeightReceived(float weight) {
+  stmCommsSendWeight(weight);
 }

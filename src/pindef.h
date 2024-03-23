@@ -2,6 +2,10 @@
 #ifndef PINDEF_H
 #define PINDEF_H
 
+#ifdef RUNNING_TESTS
+#include "mock.h"
+#endif
+
 // STM32F4 pins definitions
 #define thermoDO      PB4
 #define thermoDI      PA7 // not used
@@ -36,13 +40,8 @@
 #define HX711_dout_1  PB8
 #define HX711_dout_2  PB9
 
-#ifdef SWAP_LCD_ESP
-#define USART_LCD     Serial1 // PA2(TX) & PA3(RX)
-#define USART_ESP     Serial2 // PA9(TX) & PA10(RX)
-#else
-#define USART_LCD     Serial2 // PA2(TX) & PA3(RX)
-#define USART_ESP     Serial1 // PA9(TX) & PA10(RX)
-#endif
+#define USART_LCD     Serial2 // [Active - FULL DUPLEX DATA TRANSFER] - PA2(TX) & PA3(RX)
+#define USART_ESP     Serial1 // [INACTIVE - SEE BELOW]  PA9(TX) & PA10(RX)
 #define USART_DEBUG   Serial  // USB-CDC (Takes PA8,PA9,PA10,PA11)
 
 #endif

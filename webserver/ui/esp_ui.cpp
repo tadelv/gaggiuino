@@ -1,3 +1,4 @@
+#ifdef USE_CYD_LCD
 #include <esp32_smartdisplay.h>
 #include "src/task_config.h"
 #include "esp_ui.h"
@@ -302,3 +303,4 @@ void brewGraphCloseButtonTapped(lv_event_t *e) {
   toggleBrewState();
   lv_scr_load(ui_HomeScreen);
 }
+#endif // USE_CYD_LCD
