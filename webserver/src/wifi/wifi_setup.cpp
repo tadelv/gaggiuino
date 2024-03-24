@@ -35,8 +35,8 @@ void wifiSetup() {
   WiFi.mode(WIFI_AP_STA);
 
   // Setup Access Point - Default: 192.168.4.1
-  WiFi.softAP("Gaggiuino AP", NULL);
-  LOG_INFO("AP (Access Point) IP address: %s", WiFi.softAPIP().toString().c_str());
+  // WiFi.softAP("Gaggiuino AP", NULL);
+  // LOG_INFO("AP (Access Point) IP address: %s", WiFi.softAPIP().toString().c_str());
 
   // Connect to saved network if one exists
   wifi::credentials.init();

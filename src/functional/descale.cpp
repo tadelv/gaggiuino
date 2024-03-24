@@ -186,3 +186,25 @@ void flushPhases(void) {
     timer = millis();
   }
 }
+
+void sendDescalingProgressToEsp()
+{
+  static uint32_t espUpdateTimer = 0;
+  uint32_t now = millis();
+
+  if (now - espUpdateTimer > 1000)
+  {
+    espUpdateTimer = now;
+    uint32_t time = 0;
+    uint8_t progress = 0;
+    if (descalingState != DescalingState::IDLE)
+    {
+      time = descalingStopTime == 0 ? now - descalingStartTime : descalingStopTime - descalingStartTime;
+      progress = (uint8_t)(100 * descalingCycle / DESCALE_MAX_CYCLES);
+    }
+
+    espCommsSendDescaleProgress({.state = descalingState,
+                                 .time = time,
+                                 .progess = progress});
+  }
+}

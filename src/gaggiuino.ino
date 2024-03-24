@@ -49,9 +49,9 @@ void printState()
   LOG_INFO("brewSwitchState: %d\n", currentState.brewSwitchState);
   LOG_INFO("steamSwitchState: %d\n", currentState.steamSwitchState);
   LOG_INFO("hotWaterSwitchState: %d\n", currentState.hotWaterSwitchState);
-  LOG_INFO("isSteamForgottenON: %d\n", currentState.isSteamForgottenON);
-  LOG_INFO("scalesPresent: %d\n", currentState.scalesPresent);
-  LOG_INFO("tarePending: %d\n", currentState.tarePending);
+  // LOG_INFO("isSteamForgottenON: %d\n", currentState.isSteamForgottenON);
+  // LOG_INFO("scalesPresent: %d\n", currentState.scalesPresent);
+  // LOG_INFO("tarePending: %d\n", currentState.tarePending);
   LOG_INFO("temperature: %.2f °C\n", currentState.temperature);
   LOG_INFO("waterTemperature: %.2f °C\n", currentState.waterTemperature);
   LOG_INFO("pressure: %.2f bar\n", currentState.pressure);
@@ -140,6 +140,7 @@ void setup(void)
 
 
 //Main loop where all the logic is continuously run
+int countertime = 0;
 void loop(void) {
 #if defined(DEBUG_COMMS_ENABLED)
   readDebugCommand();
@@ -150,6 +151,11 @@ void loop(void) {
   modeSelect();
   espUpdateState();
   sysHealthCheck(SYS_PRESSURE_IDLE);
+  countertime++;
+  if (countertime % 50 == 0) {
+    // printState();
+    LOG_INFO("in loop");
+  }
 }
 
 //##############################################################################################################################
@@ -481,7 +487,7 @@ static void profiling(void) {
 
   Defer defer([]() {
     // Keep that water at temp
-    justDoCoffee(runningCfg, currentState, brewActive);
+    justDoCoffee(runningCfg, currentState, activeProfile.waterTemperature, brewActive);
   });
 
   if (brewActive) { //runs this only when brew button activated and pressure profile selected
@@ -509,7 +515,6 @@ static void profiling(void) {
     setPumpOff();
     closeValve();
   }
-}
 }
 
 //#############################################################################################
