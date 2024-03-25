@@ -17,14 +17,13 @@ void stmLog(const char *logData);
 
 void stmCommsInit(HardwareSerial &serial)
 {
-  serial.setRxBufferSize(256);
-  serial.setTxBufferSize(256);
-  // serial.begin(921600);
-  serial.begin(460800);
+  serial.setRxBufferSize(256u);
+  serial.setTxBufferSize(256u);
+  serial.begin(MAX_BD_RATE);
 
   // mcuComms.setDebugPort(&Serial);
   mcuComms.setDebugLogCallback(stmLog);
-  mcuComms.begin(serial);
+  mcuComms.begin(serial, 5000u);
 
   // Set callbacks
   mcuComms.setMessageReceivedCallback(onMessageReceived);

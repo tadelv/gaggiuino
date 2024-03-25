@@ -40,16 +40,17 @@ namespace esp {
   }
 }
 
+void espLog(const char *logString);
 void handleMessageReceived(McuCommsMessageType messageType, std::vector<uint8_t>& data);
 void espCommsInit() {
-  // USART_LCD.begin(921600);
-  USART_LCD.begin(460800);
+  USART_LCD.begin(MAX_BD_RATE);
 
   // mcuComms.setDebugPort(&USART_ESP);
-  esp::mcuComms.begin(USART_LCD, 1000);
+  esp::mcuComms.setDebugLogCallback(espLog);
 
   // Set callbacks
   esp::mcuComms.setMessageReceivedCallback(handleMessageReceived);
+  esp::mcuComms.begin(USART_LCD, 10000u);
 
   esp::initialiseState();
 }

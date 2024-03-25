@@ -25,6 +25,9 @@ SystemState systemState;
 LED led;
 TOF tof;
 
+void espLog(const char *logString) {
+  LOG_INFO(logString);
+}
 
 void printPumpParamsData()
 {
@@ -140,7 +143,6 @@ void setup(void)
 
 
 //Main loop where all the logic is continuously run
-int countertime = 0;
 void loop(void) {
 #if defined(DEBUG_COMMS_ENABLED)
   readDebugCommand();
@@ -151,11 +153,6 @@ void loop(void) {
   modeSelect();
   espUpdateState();
   sysHealthCheck(SYS_PRESSURE_IDLE);
-  countertime++;
-  if (countertime % 50 == 0) {
-    // printState();
-    LOG_INFO("in loop");
-  }
 }
 
 //##############################################################################################################################

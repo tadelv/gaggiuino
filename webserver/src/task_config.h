@@ -21,7 +21,7 @@ const UBaseType_t PRIORITY_ASYNC_TCP = 3; // this is hardcoded in the AsyncTCP l
 const UBaseType_t CORE_BLE_SCALES_MAINTAINANCE = 0;
 const UBaseType_t CORE_WIFI_MAINTENANCE  = 0;
 const UBaseType_t CORE_WEBSERVER_MAINTENANCE = 0;
-const UBaseType_t CORE_STM_COMMS  = 0;
+const UBaseType_t CORE_STM_COMMS  = 1;
 const UBaseType_t CORE_ASYNC_TCP = CONFIG_ASYNC_TCP_RUNNING_CORE;
 
 #endif
