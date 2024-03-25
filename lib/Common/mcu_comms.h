@@ -46,6 +46,8 @@ struct McuCommsRequestData {
   McuCommsMessageType type;
 };
 
+using DebugLogCallback = std::function<void(const char *)>;
+
 class McuComms {
 private:
   using MessageReceivedCallback = std::function<void(McuCommsMessageType, std::vector<uint8_t>&)>;
@@ -55,6 +57,7 @@ private:
   SerialTransfer transfer;
   MessageReceivedCallback messageReceivedCallback = nullptr;
   Stream* debugPort = nullptr;
+  DebugLogCallback logCallback = nullptr;
   size_t packetSize;
 
   /**
@@ -84,6 +87,7 @@ private:
 public:
   void begin(Stream& serial, uint32_t waitConnectionMillis = 0, size_t packetSize = MAX_DATA_PER_PACKET_DEFAULT);
   void setDebugPort(Stream* debugPort);
+  void setDebugLogCallback(DebugLogCallback callback); 
   void setMessageReceivedCallback(MessageReceivedCallback callback);
 
   // Sends a message with no data. Useful for commands. This is equivalent to sending the message with an empty data vector

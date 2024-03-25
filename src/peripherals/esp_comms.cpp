@@ -42,7 +42,8 @@ namespace esp {
 
 void handleMessageReceived(McuCommsMessageType messageType, std::vector<uint8_t>& data);
 void espCommsInit() {
-  USART_LCD.begin(921600);
+  // USART_LCD.begin(921600);
+  USART_LCD.begin(460800);
 
   // mcuComms.setDebugPort(&USART_ESP);
   esp::mcuComms.begin(USART_LCD, 1000);

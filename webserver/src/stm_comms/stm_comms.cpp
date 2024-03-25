@@ -13,12 +13,17 @@ namespace {
 
 void stmCommsTask(void* params);
 void onMessageReceived(McuCommsMessageType type, std::vector<uint8_t>& data);
-void stmCommsInit(HardwareSerial& serial) {
+void stmLog(const char *logData);
+
+void stmCommsInit(HardwareSerial &serial)
+{
   serial.setRxBufferSize(256);
   serial.setTxBufferSize(256);
-  serial.begin(921600);
+  // serial.begin(921600);
+  serial.begin(460800);
 
   // mcuComms.setDebugPort(&Serial);
+  mcuComms.setDebugLogCallback(stmLog);
   mcuComms.begin(serial);
 
   // Set callbacks

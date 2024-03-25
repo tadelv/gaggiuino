@@ -99,13 +99,16 @@ vector<uint8_t> McuComms::receiveMultiPacket() {
 }
 
 void McuComms::log(const char* format, ...) const {
-  if (!debugPort) return;
-
-  std::array<char, 128>buffer;
+  std::array<char, 128> buffer;
   va_list args;
   va_start(args, format);
   vsnprintf(buffer.data(), buffer.size(), format, args);
   va_end(args);
+  logCallback("Mcu comms:");
+  logCallback(buffer.data());
+  
+  if (!debugPort) return;
+  
   debugPort->print("McuComms: ");
   debugPort->print(buffer.data());
 }
@@ -160,6 +163,11 @@ void McuComms::begin(Stream& serial, uint32_t waitConnectionMillis, size_t packe
 
 void McuComms::setDebugPort(Stream* dbgPort) {
   McuComms::debugPort = dbgPort;
+}
+
+void McuComms::setDebugLogCallback(DebugLogCallback callback)
+{
+  logCallback = callback;
 }
 
 void McuComms::setMessageReceivedCallback(MessageReceivedCallback callback) {

@@ -26,6 +26,9 @@ void loadEverything(void *params) {
   vTaskDelete(NULL);
 }
 */
+void stmLog(const char *logData) {
+  LOG_INFO(logData);
+}
 
 void setup()
 {
@@ -34,7 +37,8 @@ void setup()
   initFS();
   persistence::init();
   state::init();
-  stmCommsInit(Serial1);
+  stmCommsInit(Serial);
+  // stmCommsSetLogCallback(stmLog);
   /*
 ====== HEAD
 
@@ -76,12 +80,14 @@ void loop() {
 // ----------------------- Handle STM callbacks ---------------------------
 // ------------------------------------------------------------------------
 void onSensorStateSnapshotReceived(const SensorStateSnapshot& sensorData) {
+  LOG_INFO("received state");
   wsSendSensorStateSnapshotToClients(sensorData);
   // lvgl_mutex.lock();
   // uiHandleStateSnapshot(sensorData);
   // lvgl_mutex.unlock();
 }
 void onShotSnapshotReceived(const ShotSnapshot& shotData) {
+  LOG_INFO("received shot");
   wsSendShotSnapshotToClients(shotData);
   // lvgl_mutex.lock();
   // uiHandleShotSnapshot(shotData);
@@ -114,10 +120,12 @@ void onDescalingProgressReceived(const DescalingProgress& progress) {
 // ------------------ Handle state updated callbacks ----------------------
 // ------------------------------------------------------------------------
 void state::onActiveProfileUpdated(const Profile& profile) {
+  LOG_INFO("active profile updated");
   stmCommsSendProfile(state::getActiveProfile());
   wsSendActiveProfileUpdated();
 }
 void state::onAllSettingsUpdated(const GaggiaSettings& settings) {
+  LOG_INFO("All settings updated");
   stmCommsSendGaggiaSettings(state::getSettings());
   wsSendSettingsUpdated();
 }
@@ -152,6 +160,6 @@ void state::onConnectedBleScalesUpdated(const blescales::Scales& scales) {
 // ------------------------------------------------------------------------
 // -------------------- Handle ble scales callbacks -----------------------
 // ------------------------------------------------------------------------
-void blescales::onWeightReceived(float weight) {
-  stmCommsSendWeight(weight);
-}
+// void blescales::onWeightReceived(float weight) {
+//   stmCommsSendWeight(weight);
+// }
