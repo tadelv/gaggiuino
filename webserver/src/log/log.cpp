@@ -4,7 +4,7 @@
 
 namespace logging {
   void (*remoteLogCallback)(std::string message);
-  HardwareSerial debugPort(0);
+  HardwareSerial debugPort(1);
 }
 
 void log_init() {

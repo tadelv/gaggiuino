@@ -5,27 +5,10 @@
 #include "server/server_setup.h"
 #include "wifi/wifi_setup.h"
 #include "server/websocket/websocket.h"
-// #include "scales/ble_scales.h"
 #include "persistence/persistence.h"
 #include "state/state.h"
 #include "./log/log.h"
-#include "ui/esp_ui.h"
-#include <mutex>
 
-std::mutex lvgl_mutex = std::mutex();
-
-/*
-void loadEverything(void *params) {
-  wifiSetup();
-  webServerSetup();
-
-  vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-  uiGoToHomeScreen();
-
-  vTaskDelete(NULL);
-}
-*/
 void stmLog(const char *logData) {
   LOG_INFO(logData);
 }
@@ -38,41 +21,12 @@ void setup()
   persistence::init();
   state::init();
   stmCommsInit(Serial);
-  // stmCommsSetLogCallback(stmLog);
-  /*
-====== HEAD
-
-  lvgl_mutex.lock();
-  uiInit();
-  lvgl_mutex.unlock();
-  xTaskCreateUniversal(loadEverything, "preLoad", configMINIMAL_STACK_SIZE + 2048, NULL, PRIORITY_BLE_SCALES_MAINTAINANCE, NULL, CORE_BLE_SCALES_MAINTAINANCE);
-=======
-*/
 wifiSetup();
 webServerSetup();
-// blescales::init();
 vTaskDelete(NULL); // Delete own task by passing NULL
 }
 
-static bool isBrewing = false;
-
 void loop() {
-  /*
-====== HEAD
-  // vTaskDelete(NULL);     //Delete own task by passing NULL(task handle can also be used)
-  lvgl_mutex.lock();
-  uiHandleLoop();
-  lvgl_mutex.unlock();
-  if (millis() % 1000 == 0) {
-    SensorStateSnapshot sensorData {0};
-    sensorData.temperature = random(90, 100);
-    sensorData.waterLvl = 33; //random(15, 85);
-    sensorData.weight = 0;
-    sensorData.brewActive = isBrewing;
-    onSensorStateSnapshotReceived(sensorData);
-  }
-=======
-*/
   vTaskDelete(NULL);     //Delete own task by passing NULL
 }
 
@@ -82,16 +36,10 @@ void loop() {
 void onSensorStateSnapshotReceived(const SensorStateSnapshot& sensorData) {
   LOG_INFO("received state");
   wsSendSensorStateSnapshotToClients(sensorData);
-  // lvgl_mutex.lock();
-  // uiHandleStateSnapshot(sensorData);
-  // lvgl_mutex.unlock();
 }
 void onShotSnapshotReceived(const ShotSnapshot& shotData) {
   LOG_INFO("received shot");
   wsSendShotSnapshotToClients(shotData);
-  // lvgl_mutex.lock();
-  // uiHandleShotSnapshot(shotData);
-  // lvgl_mutex.unlock();
 }
 
 void onSystemStateReceived(const SystemState& systemState) {
@@ -156,10 +104,3 @@ void state::onConnectedBleScalesUpdated(const blescales::Scales& scales) {
   }
   wsSendConnectedBleScalesUpdated(scales);
 }
-
-// ------------------------------------------------------------------------
-// -------------------- Handle ble scales callbacks -----------------------
-// ------------------------------------------------------------------------
-// void blescales::onWeightReceived(float weight) {
-//   stmCommsSendWeight(weight);
-// }
