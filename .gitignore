@@ -11,3 +11,4 @@ gaggiuino.ino.cpp
 extra_defines.ini
 *.code-workspace
 logs/
+gui-design

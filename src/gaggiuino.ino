@@ -661,7 +661,7 @@ static void fillBoiler(void) {
 static bool isBoilerFillPhase(unsigned long elapsedTime) {
   return elapsedTime >= BOILER_FILL_START_TIME;
 }
-
+#ifndef ASCASO
 static bool isBoilerFull(unsigned long elapsedTime) {
   bool boilerFull = false;
   if (elapsedTime > BOILER_FILL_START_TIME + 1000UL) {
@@ -672,6 +672,7 @@ static bool isBoilerFull(unsigned long elapsedTime) {
 
   return elapsedTime >= BOILER_FILL_TIMEOUT || boilerFull;
 }
+#endif
 
 // Checks if Brew switch is ON
 static bool isSwitchOn(void) {
@@ -683,7 +684,7 @@ static void fillBoilerUntilThreshod(unsigned long elapsedTime) {
     systemState.startupInitFinished = true;
     return;
   }
-
+#ifndef ASCASO
   if (isBoilerFull(elapsedTime)) {
     closeValve();
     setPumpOff();
@@ -694,6 +695,7 @@ static void fillBoilerUntilThreshod(unsigned long elapsedTime) {
   espCommsSendNotification(Notification::info("Filling boiler!"));
   openValve();
   setPumpToPercentage(0.35f);
+#endif
 }
 
 static void cpsInit(GaggiaSettings &runningCfg) {

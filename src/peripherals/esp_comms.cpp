@@ -50,7 +50,7 @@ void espCommsInit() {
 
   // Set callbacks
   esp::mcuComms.setMessageReceivedCallback(handleMessageReceived);
-  esp::mcuComms.begin(USART_LCD, 10000u);
+  esp::mcuComms.begin(USART_LCD, 5000);
 
   esp::initialiseState();
 }
