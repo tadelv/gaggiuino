@@ -6,7 +6,7 @@
 #endif
 #include "gaggiuino.h"
 
-SimpleKalmanFilter smoothPressure(0.6f, 0.6f, 0.0589f);
+SimpleKalmanFilter smoothPressure(0.15f, 0.15f, 0.2f);
 SimpleKalmanFilter smoothPumpFlow(0.4f, 0.4f, 0.25f);
 SimpleKalmanFilter smoothScalesFlow(0.1f, 0.1f, 0.0285f);
 
