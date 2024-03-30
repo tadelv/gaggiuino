@@ -8,7 +8,7 @@
 #include <vector>
 #include <functional>
 
-#define MAX_BD_RATE 921600
+#define MAX_BD_RATE 460800
 
 #ifdef ESP32
 #include "esp_task_wdt.h"
