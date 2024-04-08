@@ -17,19 +17,17 @@ PIDController controller(
 );
 
 
-float flowPerClickAtZeroBar = 0.216f;
+float flowPerClickAtZeroBar = 0.167f;
 int maxPumpClicksPerSecond = 50;
 float fpc_multiplier = 1.2f;
 //estimated through CP4SP datasheet
-constexpr std::array<float, 7> pressureInefficiencyCoefficient{ {
-  0.002854508806889097f,
-  -0.13472880734783618f,
-  2.476926292402373f,
-  -22.330673515198136f,
-  101.80888820175406f,
-  -231.10822510824374f,
-  520.0000000000166f
-} };
+constexpr std::array<float, 7> pressureInefficiencyCoefficient{{0.006060298887858395,
+                                                                -0.23114703637030648,
+                                                                3.4891841775382204,
+                                                                -26.866480513228858,
+                                                                113.2306105811027,
+                                                                -268.40231879642704,
+                                                                599.9995679328391}};
 
 // Initialising some pump specific specs, mainly:
 // - max pump clicks(dependant on region power grid spec)
